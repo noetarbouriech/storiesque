@@ -1,19 +1,49 @@
 package main
 
 import (
+	"context"
+	"database/sql"
 	"fmt"
+	"log"
 	"net/http"
 	"time"
 
+	"github.com/noetarbouriech/storiesque/internal/db"
 	"github.com/noetarbouriech/storiesque/internal/story"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
 	"github.com/go-chi/render"
+
+	_ "github.com/lib/pq"
 )
 
 func main() {
+	ctx := context.Background()
+
+	dbInstance, err := sql.Open("postgres", "port=5431 user=postgres password=test sslmode=disable")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	queries := db.New(dbInstance)
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+
+	insertedStory, err := queries.CreateStory(ctx, "Test Story")
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Println(insertedStory)
+
+	stories, err := queries.ListStories(ctx)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Println(stories)
+
 	r := chi.NewRouter()
 
 	r.Use(middleware.Logger)
