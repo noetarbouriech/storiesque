@@ -7,8 +7,8 @@ SELECT * FROM story
 ORDER BY title;
 
 -- name: CreateStory :one
-INSERT INTO story (title)
-VALUES ($1)
+INSERT INTO story (title, description)
+VALUES ($1, $2)
 RETURNING *;
 
 -- name: DeleteStory :exec

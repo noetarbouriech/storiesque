@@ -10,15 +10,20 @@ import (
 )
 
 const createStory = `-- name: CreateStory :one
-INSERT INTO story (title)
-VALUES ($1)
-RETURNING id, title
+INSERT INTO story (title, description)
+VALUES ($1, $2)
+RETURNING id, title, description
 `
 
-func (q *Queries) CreateStory(ctx context.Context, title string) (Story, error) {
-	row := q.db.QueryRowContext(ctx, createStory, title)
+type CreateStoryParams struct {
+	Title       string
+	Description string
+}
+
+func (q *Queries) CreateStory(ctx context.Context, arg CreateStoryParams) (Story, error) {
+	row := q.db.QueryRowContext(ctx, createStory, arg.Title, arg.Description)
 	var i Story
-	err := row.Scan(&i.ID, &i.Title)
+	err := row.Scan(&i.ID, &i.Title, &i.Description)
 	return i, err
 }
 
@@ -33,19 +38,19 @@ func (q *Queries) DeleteStory(ctx context.Context, id int64) error {
 }
 
 const getStory = `-- name: GetStory :one
-SELECT id, title FROM story
+SELECT id, title, description FROM story
 WHERE id = $1 LIMIT 1
 `
 
 func (q *Queries) GetStory(ctx context.Context, id int64) (Story, error) {
 	row := q.db.QueryRowContext(ctx, getStory, id)
 	var i Story
-	err := row.Scan(&i.ID, &i.Title)
+	err := row.Scan(&i.ID, &i.Title, &i.Description)
 	return i, err
 }
 
 const listStories = `-- name: ListStories :many
-SELECT id, title FROM story
+SELECT id, title, description FROM story
 ORDER BY title
 `
 
@@ -58,7 +63,7 @@ func (q *Queries) ListStories(ctx context.Context) ([]Story, error) {
 	var items []Story
 	for rows.Next() {
 		var i Story
-		if err := rows.Scan(&i.ID, &i.Title); err != nil {
+		if err := rows.Scan(&i.ID, &i.Title, &i.Description); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

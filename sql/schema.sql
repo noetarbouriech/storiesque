@@ -1,5 +1,6 @@
 CREATE TABLE story
 (
-  id   BIGSERIAL PRIMARY KEY,
-  title VARCHAR(32) NOT NULL
+  id BIGSERIAL PRIMARY KEY,
+  title VARCHAR(32) NOT NULL,
+  description VARCHAR(512)
 );

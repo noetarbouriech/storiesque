@@ -7,6 +7,7 @@ package db
 import ()
 
 type Story struct {
-	ID    int64
-	Title string
+	ID          int64
+	Title       string
+	Description string
 }
