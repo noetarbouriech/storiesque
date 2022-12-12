@@ -25,7 +25,7 @@ type Story struct {
 	Id            int64  `json:"id"`
 	Title         string `json:"title"`
 	Description   string `json:"description"`
-	First_page_id int32  `json:"first_page_id"`
+	First_page_id int64  `json:"first_page_id"`
 }
 
 func (s *Service) Routes(r chi.Router) {
@@ -42,7 +42,7 @@ func (s *Service) getStories(w http.ResponseWriter, r *http.Request) {
 			Id:            story.ID,
 			Title:         story.Title,
 			Description:   story.Description.String,
-			First_page_id: story.FirstPageID.Int32,
+			First_page_id: story.FirstPageID.Int64,
 		}
 		rStories = append(rStories, rStory)
 	}
@@ -85,12 +85,12 @@ func (s *Service) createStory(w http.ResponseWriter, r *http.Request) {
 func (s *Service) deleteStory(w http.ResponseWriter, r *http.Request) {
 	id, errInt := strconv.Atoi(chi.URLParam(r, "id"))
 	if errInt != nil {
-		render.JSON(w, r, map[string]string{"message": "Impossible to parse int"})
+		render.JSON(w, r, map[string]string{"message": "impossible to parse int"})
 		return
 	}
 	errDB := s.queries.DeleteStory(context.Background(), int64(id))
 	if errDB != nil {
-		render.JSON(w, r, map[string]string{"message": "No story found"})
+		render.JSON(w, r, map[string]string{"message": "no story found"})
 		return
 	}
 	render.JSON(w, r, map[string]string{"message": "successfully deleted"})

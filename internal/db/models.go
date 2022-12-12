@@ -18,5 +18,5 @@ type Story struct {
 	ID          int64
 	Title       string
 	Description sql.NullString
-	FirstPageID sql.NullInt32
+	FirstPageID sql.NullInt64
 }
