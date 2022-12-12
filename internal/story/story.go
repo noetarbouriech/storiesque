@@ -30,6 +30,7 @@ type Story struct {
 
 func (s *Service) Routes(r chi.Router) {
 	r.Get("/story", s.getStories)
+	r.Get("/story/{id}", s.getStory)
 	r.Post("/story", s.createStory)
 	r.Delete("/story/{id}", s.deleteStory)
 }
@@ -47,10 +48,30 @@ func (s *Service) getStories(w http.ResponseWriter, r *http.Request) {
 		rStories = append(rStories, rStory)
 	}
 	if err != nil {
-		log.Fatal(err.Error())
+		render.JSON(w, r, map[string]string{"message": "no story found"})
 		return
 	}
 	render.JSON(w, r, rStories)
+}
+
+func (s *Service) getStory(w http.ResponseWriter, r *http.Request) {
+	id, errInt := strconv.Atoi(chi.URLParam(r, "id"))
+	if errInt != nil {
+		render.JSON(w, r, map[string]string{"message": "impossible to parse int"})
+		return
+	}
+	story, err := s.queries.GetStory(context.Background(), int64(id))
+	if err != nil {
+		render.JSON(w, r, map[string]string{"message": "no story found"})
+		return
+	}
+	storyJson := Story{
+		Id:            story.ID,
+		Title:         story.Title,
+		Description:   story.Description.String,
+		First_page_id: story.FirstPageID.Int64,
+	}
+	render.JSON(w, r, storyJson)
 }
 
 func (s *Service) createStory(w http.ResponseWriter, r *http.Request) {
