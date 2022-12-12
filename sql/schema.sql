@@ -12,3 +12,12 @@ CREATE TABLE story
   description VARCHAR(512),
   first_page_id BIGSERIAL REFERENCES page(id)
 );
+
+CREATE TABLE users
+(
+  id BIGSERIAL PRIMARY KEY,
+  username VARCHAR(24) NOT NULL,
+  password_hash VARCHAR(64) NOT NULL,
+  is_admin BOOLEAN NOT NULL DEFAULT false,
+  email VARCHAR(128) NOT NULL
+);

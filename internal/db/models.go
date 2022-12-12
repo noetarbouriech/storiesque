@@ -20,3 +20,11 @@ type Story struct {
 	Description sql.NullString
 	FirstPageID sql.NullInt64
 }
+
+type User struct {
+	ID           int64
+	Username     string
+	PasswordHash string
+	IsAdmin      bool
+	Email        string
+}

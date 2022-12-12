@@ -8,6 +8,7 @@ import (
 	"github.com/noetarbouriech/storiesque/internal/api"
 	"github.com/noetarbouriech/storiesque/internal/db"
 	"github.com/noetarbouriech/storiesque/internal/story"
+	"github.com/noetarbouriech/storiesque/internal/user"
 )
 
 func main() {
@@ -24,6 +25,8 @@ func main() {
 	// init services
 	storyService := story.NewService(queries)
 	router.Group(storyService.Routes)
+	userService := user.NewService(queries)
+	router.Group(userService.Routes)
 
 	fmt.Println("Starting server on port 3000")
 	http.ListenAndServe(":3000", router)
