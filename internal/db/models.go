@@ -4,10 +4,19 @@
 
 package db
 
-import ()
+import (
+	"database/sql"
+)
+
+type Page struct {
+	ID    int64
+	Title string
+	Text  string
+}
 
 type Story struct {
 	ID          int64
 	Title       string
-	Description string
+	Description sql.NullString
+	FirstPageID sql.NullInt32
 }

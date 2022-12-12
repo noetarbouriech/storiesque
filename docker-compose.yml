@@ -11,3 +11,4 @@ services:
       - 5431:5432
     volumes:
       - ./sql/schema.sql:/docker-entrypoint-initdb.d/create_tables.sql
+      - ./sql/triggers.sql:/docker-entrypoint-initdb.d/create_triggers.sql

@@ -7,23 +7,29 @@ package db
 
 import (
 	"context"
+	"database/sql"
 )
 
 const createStory = `-- name: CreateStory :one
 INSERT INTO story (title, description)
 VALUES ($1, $2)
-RETURNING id, title, description
+RETURNING id, title, description, first_page_id
 `
 
 type CreateStoryParams struct {
 	Title       string
-	Description string
+	Description sql.NullString
 }
 
 func (q *Queries) CreateStory(ctx context.Context, arg CreateStoryParams) (Story, error) {
 	row := q.db.QueryRowContext(ctx, createStory, arg.Title, arg.Description)
 	var i Story
-	err := row.Scan(&i.ID, &i.Title, &i.Description)
+	err := row.Scan(
+		&i.ID,
+		&i.Title,
+		&i.Description,
+		&i.FirstPageID,
+	)
 	return i, err
 }
 
@@ -38,19 +44,24 @@ func (q *Queries) DeleteStory(ctx context.Context, id int64) error {
 }
 
 const getStory = `-- name: GetStory :one
-SELECT id, title, description FROM story
+SELECT id, title, description, first_page_id FROM story
 WHERE id = $1 LIMIT 1
 `
 
 func (q *Queries) GetStory(ctx context.Context, id int64) (Story, error) {
 	row := q.db.QueryRowContext(ctx, getStory, id)
 	var i Story
-	err := row.Scan(&i.ID, &i.Title, &i.Description)
+	err := row.Scan(
+		&i.ID,
+		&i.Title,
+		&i.Description,
+		&i.FirstPageID,
+	)
 	return i, err
 }
 
 const listStories = `-- name: ListStories :many
-SELECT id, title, description FROM story
+SELECT id, title, description, first_page_id FROM story
 ORDER BY title
 `
 
@@ -63,7 +74,12 @@ func (q *Queries) ListStories(ctx context.Context) ([]Story, error) {
 	var items []Story
 	for rows.Next() {
 		var i Story
-		if err := rows.Scan(&i.ID, &i.Title, &i.Description); err != nil {
+		if err := rows.Scan(
+			&i.ID,
+			&i.Title,
+			&i.Description,
+			&i.FirstPageID,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

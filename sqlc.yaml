@@ -7,7 +7,3 @@ sql:
     go:
       package: "db"
       out: "internal/db"
-      overrides:
-        - db_type: pg_catalog.varchar
-          go_type: string
-          nullable: true

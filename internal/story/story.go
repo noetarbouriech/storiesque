@@ -2,6 +2,7 @@ package story
 
 import (
 	"context"
+	"database/sql"
 	"encoding/json"
 	"log"
 	"net/http"
@@ -19,6 +20,13 @@ func NewService(queries *db.Queries) *Service {
 	return &Service{queries: queries}
 }
 
+type Story struct {
+	Id            int64  `json:"id"`
+	Title         string `json:"title"`
+	Description   string `json:"description"`
+	First_page_id int32  `json:"first_page_id"`
+}
+
 func (s *Service) Routes(r chi.Router) {
 	r.Get("/story", s.getStories)
 	r.Post("/story", s.createStory)
@@ -26,32 +34,46 @@ func (s *Service) Routes(r chi.Router) {
 
 func (s *Service) getStories(w http.ResponseWriter, r *http.Request) {
 	stories, err := s.queries.ListStories(context.Background())
+	rStories := []Story{}
+	for _, story := range stories {
+		rStory := Story{
+			Id:            story.ID,
+			Title:         story.Title,
+			Description:   story.Description.String,
+			First_page_id: story.FirstPageID.Int32,
+		}
+		rStories = append(rStories, rStory)
+	}
 	if err != nil {
 		log.Fatal(err.Error())
 		return
 	}
-	render.JSON(w, r, stories)
+	render.JSON(w, r, rStories)
 }
 
 func (s *Service) createStory(w http.ResponseWriter, r *http.Request) {
-	var story db.Story
-	json.NewDecoder(r.Body).Decode(&story)
+	var story Story
+	errJson := json.NewDecoder(r.Body).Decode(&story)
+	if errJson != nil {
+		render.JSON(w, r, map[string]string{"message": "issue with json decoding"})
+		return
+	}
 
 	if len(story.Title) == 0 || len(story.Title) > 32 {
 		render.JSON(w, r, map[string]string{"message": "issue with title length"})
 		return
 	}
 	if len(story.Description) > 512 {
-		render.JSON(w, r, map[string]string{"message": "description too long"})
+		render.JSON(w, r, map[string]string{"message": "issue with description"})
 		return
 	}
 
-	_, err := s.queries.CreateStory(context.Background(), db.CreateStoryParams{
+	_, errDB := s.queries.CreateStory(context.Background(), db.CreateStoryParams{
 		Title:       story.Title,
-		Description: story.Description,
+		Description: sql.NullString{String: story.Description, Valid: true},
 	})
-	if err != nil {
-		log.Fatal(err.Error())
+	if errDB != nil {
+		log.Fatal(errDB.Error())
 		return
 	}
 
