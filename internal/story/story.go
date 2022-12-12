@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/render"
@@ -30,6 +31,7 @@ type Story struct {
 func (s *Service) Routes(r chi.Router) {
 	r.Get("/story", s.getStories)
 	r.Post("/story", s.createStory)
+	r.Delete("/story/{id}", s.deleteStory)
 }
 
 func (s *Service) getStories(w http.ResponseWriter, r *http.Request) {
@@ -78,4 +80,18 @@ func (s *Service) createStory(w http.ResponseWriter, r *http.Request) {
 	}
 
 	render.JSON(w, r, map[string]string{"message": "successfully created"})
+}
+
+func (s *Service) deleteStory(w http.ResponseWriter, r *http.Request) {
+	id, errInt := strconv.Atoi(chi.URLParam(r, "id"))
+	if errInt != nil {
+		render.JSON(w, r, map[string]string{"message": "Impossible to parse int"})
+		return
+	}
+	errDB := s.queries.DeleteStory(context.Background(), int64(id))
+	if errDB != nil {
+		render.JSON(w, r, map[string]string{"message": "No story found"})
+		return
+	}
+	render.JSON(w, r, map[string]string{"message": "successfully deleted"})
 }
