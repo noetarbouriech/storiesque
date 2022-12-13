@@ -9,6 +9,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/render"
+	"github.com/go-playground/validator/v10"
 	"github.com/noetarbouriech/storiesque/internal/db"
 	"github.com/noetarbouriech/storiesque/internal/utils"
 	"golang.org/x/crypto/bcrypt"
@@ -23,9 +24,9 @@ func NewService(queries *db.Queries) *Service {
 }
 
 type UserCreation struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
-	Email    string `json:"email"`
+	Username string `json:"username" validate:"required,gte=0,lte=24"`
+	Password string `json:"password" validate:"required,gte=0,lte=128"`
+	Email    string `json:"email"    validate:"required,gte=0,lte=128,email"`
 }
 
 type User struct {
@@ -33,6 +34,13 @@ type User struct {
 	Username string `json:"username"`
 	Email    string `json:"email"`
 	IsAdmin  bool   `json:"is_admin"`
+}
+
+// use a single instance of Validate, it caches struct info
+var validate *validator.Validate
+
+func init() {
+	validate = validator.New()
 }
 
 func (s *Service) PublicRoutes(r chi.Router) {
@@ -85,25 +93,37 @@ func (s *Service) getUser(w http.ResponseWriter, r *http.Request) {
 
 func (s *Service) createUser(w http.ResponseWriter, r *http.Request) {
 	var user UserCreation
+
+	// decode json in struct
 	errJson := json.NewDecoder(r.Body).Decode(&user)
 	if errJson != nil {
 		utils.Response(w, r, 500, "error while decoding json")
 		return
 	}
 
+	// validate user form
+	err := validate.Struct(user)
+	if err != nil {
+		utils.Response(w, r, 400, "invalid input")
+		return
+	}
+
+	// hash password
 	hashedPassword, errPassword := bcrypt.GenerateFromPassword([]byte(user.Password), 8)
 	if errPassword != nil {
 		utils.Response(w, r, 500, "error while hashing password")
 		return
 	}
-	_, errDB := s.queries.CreateUser(context.Background(), db.CreateUserParams{
+
+	// create user in db
+	_, err = s.queries.CreateUser(context.Background(), db.CreateUserParams{
 		Username:     user.Username,
 		PasswordHash: string(hashedPassword),
 		Email:        user.Email,
 	})
-	if errDB != nil {
-		utils.Response(w, r, 500, errDB.Error())
-		log.Fatal(errDB.Error())
+	if err != nil {
+		utils.Response(w, r, 500, err.Error())
+		log.Fatal(err.Error())
 		return
 	}
 

@@ -9,6 +9,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/jwtauth/v5"
+	"github.com/go-playground/validator/v10"
 	"github.com/noetarbouriech/storiesque/internal/db"
 	"github.com/noetarbouriech/storiesque/internal/user"
 	"github.com/noetarbouriech/storiesque/internal/utils"
@@ -25,6 +26,13 @@ func NewService(queries *db.Queries, jwt_secret string) *Service {
 		queries:   queries,
 		tokenAuth: jwtauth.New("HS256", []byte(jwt_secret), nil),
 	}
+}
+
+// use a single instance of Validate, it caches struct info
+var validate *validator.Validate
+
+func init() {
+	validate = validator.New()
 }
 
 type Credentials struct {
@@ -101,9 +109,10 @@ func (s *Service) signUp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// check fields
-	if user.Email == "" || user.Username == "" || user.Password == "" {
-		utils.Response(w, r, 400, "missing some fields")
+	// validate user form
+	err = validate.Struct(user)
+	if err != nil {
+		utils.Response(w, r, 400, "invalid input")
 		return
 	}
 

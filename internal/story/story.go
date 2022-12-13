@@ -10,6 +10,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/render"
+	"github.com/go-playground/validator/v10"
 	"github.com/noetarbouriech/storiesque/internal/db"
 	"github.com/noetarbouriech/storiesque/internal/utils"
 )
@@ -24,9 +25,16 @@ func NewService(queries *db.Queries) *Service {
 
 type Story struct {
 	Id            int64  `json:"id"`
-	Title         string `json:"title"`
-	Description   string `json:"description"`
+	Title         string `json:"title"         validate:"required,gte=0,lte=32"`
+	Description   string `json:"description"   validate:"lte=512"`
 	First_page_id int64  `json:"first_page_id"`
+}
+
+// use a single instance of Validate, it caches struct info
+var validate *validator.Validate
+
+func init() {
+	validate = validator.New()
 }
 
 func (s *Service) PublicRoutes(r chi.Router) {
@@ -80,28 +88,29 @@ func (s *Service) getStory(w http.ResponseWriter, r *http.Request) {
 
 func (s *Service) createStory(w http.ResponseWriter, r *http.Request) {
 	var story Story
+
+	// translate json to struct
 	errJson := json.NewDecoder(r.Body).Decode(&story)
 	if errJson != nil {
 		utils.Response(w, r, 500, "error while decoding json")
 		return
 	}
 
-	if len(story.Title) == 0 || len(story.Title) > 32 {
-		utils.Response(w, r, 400, "title too short or too long")
-		return
-	}
-	if len(story.Description) > 512 {
-		utils.Response(w, r, 400, "description too long")
+	// validate form
+	err := validate.Struct(story)
+	if err != nil {
+		utils.Response(w, r, 400, "invalid input")
 		return
 	}
 
-	_, errDB := s.queries.CreateStory(context.Background(), db.CreateStoryParams{
+	// create story in db
+	_, err = s.queries.CreateStory(context.Background(), db.CreateStoryParams{
 		Title:       story.Title,
 		Description: sql.NullString{String: story.Description, Valid: true},
 	})
-	if errDB != nil {
-		utils.Response(w, r, 500, errDB.Error())
-		log.Fatal(errDB.Error())
+	if err != nil {
+		utils.Response(w, r, 500, err.Error())
+		log.Fatal(err.Error())
 		return
 	}
 
