@@ -8,12 +8,12 @@ import (
 	"github.com/lestrrat-go/jwx/v2/jwt"
 )
 
-func Verifier() func(http.Handler) http.Handler {
-	return jwtauth.Verifier(tokenAuth)
+func (s *Service) Verifier() func(http.Handler) http.Handler {
+	return jwtauth.Verifier(s.tokenAuth)
 }
 
 // same as jwtauth.Authenticator but in json
-func Authenticator(next http.Handler) http.Handler {
+func (s *Service) Authenticator(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		token, _, err := jwtauth.FromContext(r.Context())
 		if err != nil {

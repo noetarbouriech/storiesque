@@ -15,27 +15,21 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-var tokenAuth *jwtauth.JWTAuth
-
 type Service struct {
-	queries    *db.Queries
-	jwt_secret string
+	queries   *db.Queries
+	tokenAuth *jwtauth.JWTAuth
 }
 
 func NewService(queries *db.Queries, jwt_secret string) *Service {
 	return &Service{
-		queries:    queries,
-		jwt_secret: jwt_secret,
+		queries:   queries,
+		tokenAuth: jwtauth.New("HS256", []byte(jwt_secret), nil),
 	}
 }
 
 type Credentials struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
-}
-
-func (s *Service) init() {
-	tokenAuth = jwtauth.New("HS256", []byte(s.jwt_secret), nil)
 }
 
 func (s *Service) PublicRoutes(r chi.Router) {
@@ -70,7 +64,7 @@ func (s *Service) login(w http.ResponseWriter, r *http.Request) {
 
 	// create token
 	expireTime := time.Now().Add(15 * time.Minute)
-	_, tokenString, err := tokenAuth.Encode(map[string]interface{}{
+	_, tokenString, err := s.tokenAuth.Encode(map[string]interface{}{
 		"name": user.Username,     // username
 		"id":   user.ID,           // user id
 		"iat":  time.Now(),        // issued time

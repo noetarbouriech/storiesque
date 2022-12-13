@@ -38,8 +38,8 @@ func main() {
 
 	// User routes
 	router.Group(func(r chi.Router) {
-		r.Use(auth.Verifier())
-		r.Use(auth.Authenticator)
+		r.Use(authService.Verifier())
+		r.Use(authService.Authenticator)
 
 		r.Group(userService.UserRoutes)
 		r.Group(storyService.UserRoutes)
