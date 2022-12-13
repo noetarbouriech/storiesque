@@ -28,9 +28,12 @@ type Story struct {
 	First_page_id int64  `json:"first_page_id"`
 }
 
-func (s *Service) Routes(r chi.Router) {
+func (s *Service) PublicRoutes(r chi.Router) {
 	r.Get("/story", s.getStories)
 	r.Get("/story/{id}", s.getStory)
+}
+
+func (s *Service) UserRoutes(r chi.Router) {
 	r.Post("/story", s.createStory)
 	r.Delete("/story/{id}", s.deleteStory)
 }

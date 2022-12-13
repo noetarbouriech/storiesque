@@ -1,4 +1,4 @@
-package user
+package auth
 
 import (
 	"context"
@@ -7,21 +7,40 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/jwtauth/v5"
 	"github.com/go-chi/render"
 	"github.com/noetarbouriech/storiesque/internal/db"
+	"github.com/noetarbouriech/storiesque/internal/user"
 	"golang.org/x/crypto/bcrypt"
 )
 
 var tokenAuth *jwtauth.JWTAuth
+
+type Service struct {
+	queries    *db.Queries
+	jwt_secret string
+}
+
+func NewService(queries *db.Queries, jwt_secret string) *Service {
+	return &Service{
+		queries:    queries,
+		jwt_secret: jwt_secret,
+	}
+}
 
 type Credentials struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
 }
 
-func init() {
-	tokenAuth = jwtauth.New("HS256", []byte("secret_key"), nil)
+func (s *Service) init() {
+	tokenAuth = jwtauth.New("HS256", []byte(s.jwt_secret), nil)
+}
+
+func (s *Service) PublicRoutes(r chi.Router) {
+	r.Post("/login", s.login)
+	r.Post("/signup", s.signUp)
 }
 
 func (s *Service) login(w http.ResponseWriter, r *http.Request) {
@@ -83,7 +102,7 @@ func (s *Service) login(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Service) signUp(w http.ResponseWriter, r *http.Request) {
-	var user UserCreation
+	var user user.UserCreation
 
 	// decode json
 	err := json.NewDecoder(r.Body).Decode(&user)

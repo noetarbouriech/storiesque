@@ -34,15 +34,15 @@ type User struct {
 	IsAdmin  bool   `json:"is_admin"`
 }
 
-func (s *Service) Routes(r chi.Router) {
+func (s *Service) PublicRoutes(r chi.Router) {
 	r.Get("/user", s.getUsers)
 	r.Get("/user/{id}", s.getUser)
+}
+
+func (s *Service) UserRoutes(r chi.Router) {
 	r.Post("/user", s.createUser)
 	r.Put("/user/{id}", s.updateUser)
 	r.Delete("/user/{id}", s.deleteUser)
-
-	r.Post("/login", s.login)
-	r.Post("/signup", s.signUp)
 }
 
 func (s *Service) getUsers(w http.ResponseWriter, r *http.Request) {
