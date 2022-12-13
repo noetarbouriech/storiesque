@@ -40,6 +40,9 @@ func (s *Service) Routes(r chi.Router) {
 	r.Post("/user", s.createUser)
 	r.Put("/user/{id}", s.updateUser)
 	r.Delete("/user/{id}", s.deleteUser)
+
+	r.Post("/login", s.login)
+	r.Post("/signup", s.signUp)
 }
 
 func (s *Service) getUsers(w http.ResponseWriter, r *http.Request) {

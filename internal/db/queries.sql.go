@@ -113,6 +113,42 @@ func (q *Queries) GetUser(ctx context.Context, id int64) (User, error) {
 	return i, err
 }
 
+const getUserWithEmail = `-- name: GetUserWithEmail :one
+SELECT id, username, password_hash, is_admin, email FROM users
+WHERE email = $1 LIMIT 1
+`
+
+func (q *Queries) GetUserWithEmail(ctx context.Context, email string) (User, error) {
+	row := q.db.QueryRowContext(ctx, getUserWithEmail, email)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Username,
+		&i.PasswordHash,
+		&i.IsAdmin,
+		&i.Email,
+	)
+	return i, err
+}
+
+const getUserWithUsername = `-- name: GetUserWithUsername :one
+SELECT id, username, password_hash, is_admin, email FROM users
+WHERE username = $1 LIMIT 1
+`
+
+func (q *Queries) GetUserWithUsername(ctx context.Context, username string) (User, error) {
+	row := q.db.QueryRowContext(ctx, getUserWithUsername, username)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Username,
+		&i.PasswordHash,
+		&i.IsAdmin,
+		&i.Email,
+	)
+	return i, err
+}
+
 const listStories = `-- name: ListStories :many
 SELECT id, title, description, first_page_id FROM story
 ORDER BY title
