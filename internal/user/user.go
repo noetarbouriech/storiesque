@@ -10,6 +10,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/render"
 	"github.com/noetarbouriech/storiesque/internal/db"
+	"github.com/noetarbouriech/storiesque/internal/utils"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -47,6 +48,10 @@ func (s *Service) UserRoutes(r chi.Router) {
 
 func (s *Service) getUsers(w http.ResponseWriter, r *http.Request) {
 	users, err := s.queries.ListUsers(context.Background())
+	if err != nil {
+		utils.Response(w, r, 404, "user not found")
+		return
+	}
 	rUsers := []User{}
 	for _, user := range users {
 		rUser := User{
@@ -56,22 +61,18 @@ func (s *Service) getUsers(w http.ResponseWriter, r *http.Request) {
 		}
 		rUsers = append(rUsers, rUser)
 	}
-	if err != nil {
-		render.JSON(w, r, map[string]string{"message": "no user found"})
-		return
-	}
 	render.JSON(w, r, rUsers)
 }
 
 func (s *Service) getUser(w http.ResponseWriter, r *http.Request) {
 	id, errInt := strconv.Atoi(chi.URLParam(r, "id"))
 	if errInt != nil {
-		render.JSON(w, r, map[string]string{"message": "impossible to parse id"})
+		utils.Response(w, r, 400, "impossible to parse user id")
 		return
 	}
 	user, err := s.queries.GetUser(context.Background(), int64(id))
 	if err != nil {
-		render.JSON(w, r, map[string]string{"message": "no user found"})
+		utils.Response(w, r, 404, "user not found")
 		return
 	}
 	userJson := User{
@@ -86,13 +87,13 @@ func (s *Service) createUser(w http.ResponseWriter, r *http.Request) {
 	var user UserCreation
 	errJson := json.NewDecoder(r.Body).Decode(&user)
 	if errJson != nil {
-		render.JSON(w, r, map[string]string{"message": "issue with json decoding"})
+		utils.Response(w, r, 500, "error while decoding json")
 		return
 	}
 
 	hashedPassword, errPassword := bcrypt.GenerateFromPassword([]byte(user.Password), 8)
 	if errPassword != nil {
-		render.JSON(w, r, map[string]string{"message": "issue with password hashing"})
+		utils.Response(w, r, 500, "error while hashing password")
 		return
 	}
 	_, errDB := s.queries.CreateUser(context.Background(), db.CreateUserParams{
@@ -101,11 +102,12 @@ func (s *Service) createUser(w http.ResponseWriter, r *http.Request) {
 		Email:        user.Email,
 	})
 	if errDB != nil {
+		utils.Response(w, r, 500, errDB.Error())
 		log.Fatal(errDB.Error())
 		return
 	}
 
-	render.JSON(w, r, map[string]string{"message": "successfully created"})
+	utils.Response(w, r, 200, "user successfully created")
 }
 
 func (s *Service) updateUser(w http.ResponseWriter, r *http.Request) {
@@ -113,21 +115,21 @@ func (s *Service) updateUser(w http.ResponseWriter, r *http.Request) {
 	var user UserCreation
 	errJson := json.NewDecoder(r.Body).Decode(&user)
 	if errJson != nil {
-		render.JSON(w, r, map[string]string{"message": "issue with json decoding"})
+		utils.Response(w, r, 500, "error while decoding json")
 		return
 	}
 
 	// hash password
 	hashedPassword, errPassword := bcrypt.GenerateFromPassword([]byte(user.Password), 8)
 	if errPassword != nil {
-		render.JSON(w, r, map[string]string{"message": "issue with password hashing"})
+		utils.Response(w, r, 500, "error while hashing password")
 		return
 	}
 
 	// get id in param
 	id, errInt := strconv.Atoi(chi.URLParam(r, "id"))
 	if errInt != nil {
-		render.JSON(w, r, map[string]string{"message": "impossible to parse id"})
+		utils.Response(w, r, 400, "impossible to parse user id")
 		return
 	}
 
@@ -145,23 +147,23 @@ func (s *Service) updateUser(w http.ResponseWriter, r *http.Request) {
 		Email:         user.Email,
 	})
 	if errDB != nil {
-		render.JSON(w, r, map[string]string{"message": "no user found"})
+		utils.Response(w, r, 404, "user not found")
 		return
 	}
 
-	render.JSON(w, r, map[string]string{"message": "successfully updated"})
+	utils.Response(w, r, 200, "user successfully updated")
 }
 
 func (s *Service) deleteUser(w http.ResponseWriter, r *http.Request) {
 	id, errInt := strconv.Atoi(chi.URLParam(r, "id"))
 	if errInt != nil {
-		render.JSON(w, r, map[string]string{"message": "impossible to parse id"})
+		utils.Response(w, r, 400, "impossible to parse user id")
 		return
 	}
 	errDB := s.queries.DeleteUser(context.Background(), int64(id))
 	if errDB != nil {
-		render.JSON(w, r, map[string]string{"message": "no user found"})
+		utils.Response(w, r, 404, "user not found")
 		return
 	}
-	render.JSON(w, r, map[string]string{"message": "successfully deleted"})
+	utils.Response(w, r, 200, "user successfully deleted")
 }

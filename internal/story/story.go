@@ -11,6 +11,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/render"
 	"github.com/noetarbouriech/storiesque/internal/db"
+	"github.com/noetarbouriech/storiesque/internal/utils"
 )
 
 type Service struct {
@@ -40,6 +41,10 @@ func (s *Service) UserRoutes(r chi.Router) {
 
 func (s *Service) getStories(w http.ResponseWriter, r *http.Request) {
 	stories, err := s.queries.ListStories(context.Background())
+	if err != nil {
+		utils.Response(w, r, 404, "story not found")
+		return
+	}
 	rStories := []Story{}
 	for _, story := range stories {
 		rStory := Story{
@@ -50,22 +55,18 @@ func (s *Service) getStories(w http.ResponseWriter, r *http.Request) {
 		}
 		rStories = append(rStories, rStory)
 	}
-	if err != nil {
-		render.JSON(w, r, map[string]string{"message": "no story found"})
-		return
-	}
 	render.JSON(w, r, rStories)
 }
 
 func (s *Service) getStory(w http.ResponseWriter, r *http.Request) {
 	id, errInt := strconv.Atoi(chi.URLParam(r, "id"))
 	if errInt != nil {
-		render.JSON(w, r, map[string]string{"message": "impossible to parse int"})
+		utils.Response(w, r, 400, "impossible to parse story id")
 		return
 	}
 	story, err := s.queries.GetStory(context.Background(), int64(id))
 	if err != nil {
-		render.JSON(w, r, map[string]string{"message": "no story found"})
+		utils.Response(w, r, 404, "story not found")
 		return
 	}
 	storyJson := Story{
@@ -81,16 +82,16 @@ func (s *Service) createStory(w http.ResponseWriter, r *http.Request) {
 	var story Story
 	errJson := json.NewDecoder(r.Body).Decode(&story)
 	if errJson != nil {
-		render.JSON(w, r, map[string]string{"message": "issue with json decoding"})
+		utils.Response(w, r, 500, "error while decoding json")
 		return
 	}
 
 	if len(story.Title) == 0 || len(story.Title) > 32 {
-		render.JSON(w, r, map[string]string{"message": "issue with title length"})
+		utils.Response(w, r, 400, "title too short or too long")
 		return
 	}
 	if len(story.Description) > 512 {
-		render.JSON(w, r, map[string]string{"message": "issue with description"})
+		utils.Response(w, r, 400, "description too long")
 		return
 	}
 
@@ -99,23 +100,24 @@ func (s *Service) createStory(w http.ResponseWriter, r *http.Request) {
 		Description: sql.NullString{String: story.Description, Valid: true},
 	})
 	if errDB != nil {
+		utils.Response(w, r, 500, errDB.Error())
 		log.Fatal(errDB.Error())
 		return
 	}
 
-	render.JSON(w, r, map[string]string{"message": "successfully created"})
+	utils.Response(w, r, 201, "story successfully created")
 }
 
 func (s *Service) deleteStory(w http.ResponseWriter, r *http.Request) {
 	id, errInt := strconv.Atoi(chi.URLParam(r, "id"))
 	if errInt != nil {
-		render.JSON(w, r, map[string]string{"message": "impossible to parse int"})
+		utils.Response(w, r, 400, "story id bad format")
 		return
 	}
 	errDB := s.queries.DeleteStory(context.Background(), int64(id))
 	if errDB != nil {
-		render.JSON(w, r, map[string]string{"message": "no story found"})
+		utils.Response(w, r, 404, "story not found")
 		return
 	}
-	render.JSON(w, r, map[string]string{"message": "successfully deleted"})
+	utils.Response(w, r, 200, "story successfully deleted")
 }

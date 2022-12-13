@@ -9,9 +9,9 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/jwtauth/v5"
-	"github.com/go-chi/render"
 	"github.com/noetarbouriech/storiesque/internal/db"
 	"github.com/noetarbouriech/storiesque/internal/user"
+	"github.com/noetarbouriech/storiesque/internal/utils"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -43,22 +43,19 @@ func (s *Service) login(w http.ResponseWriter, r *http.Request) {
 	// decode json
 	err := json.NewDecoder(r.Body).Decode(&credentials)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		render.JSON(w, r, map[string]string{"message": "error with json"})
+		utils.Response(w, r, 500, "error while decoding json")
 		return
 	}
 
 	// get user
 	user, err := s.queries.GetUserWithEmail(context.Background(), credentials.Email)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		render.JSON(w, r, map[string]string{"message": "account not found"})
+		utils.Response(w, r, 404, "account not found")
 		return
 	}
 
 	if err = bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(credentials.Password)); err != nil {
-		w.WriteHeader(http.StatusUnauthorized)
-		render.JSON(w, r, map[string]string{"message": "wrong password"})
+		utils.Response(w, r, 400, "wrong password")
 		return
 	}
 
@@ -71,8 +68,7 @@ func (s *Service) login(w http.ResponseWriter, r *http.Request) {
 		"exp":  expireTime.Unix(), // expire time
 	})
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		render.JSON(w, r, map[string]string{"message": "error with token creation"})
+		utils.Response(w, r, 500, "error with token creation")
 		return
 	}
 
@@ -92,7 +88,7 @@ func (s *Service) login(w http.ResponseWriter, r *http.Request) {
 		Unparsed:   []string{},
 	})
 
-	render.JSON(w, r, map[string]string{"message": "successfully logged in"})
+	utils.Response(w, r, 200, "successfully logged in")
 }
 
 func (s *Service) signUp(w http.ResponseWriter, r *http.Request) {
@@ -101,39 +97,34 @@ func (s *Service) signUp(w http.ResponseWriter, r *http.Request) {
 	// decode json
 	err := json.NewDecoder(r.Body).Decode(&user)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		render.JSON(w, r, map[string]string{"message": "error with json"})
+		utils.Response(w, r, 500, "error while decoding json")
 		return
 	}
 
 	// check fields
 	if user.Email == "" || user.Username == "" || user.Password == "" {
-		w.WriteHeader(http.StatusBadRequest)
-		render.JSON(w, r, map[string]string{"message": "missing fields"})
+		utils.Response(w, r, 400, "missing some fields")
 		return
 	}
 
 	// check if user email already exists
 	_, err = s.queries.GetUserWithEmail(context.Background(), user.Email)
 	if err == nil {
-		w.WriteHeader(http.StatusBadRequest)
-		render.JSON(w, r, map[string]string{"message": "user with this email already exists"})
+		utils.Response(w, r, 400, "a user with this email address already exists")
 		return
 	}
 
 	// check if username already exists
 	_, err = s.queries.GetUserWithUsername(context.Background(), user.Username)
 	if err == nil {
-		w.WriteHeader(http.StatusBadRequest)
-		render.JSON(w, r, map[string]string{"message": "user with this username already exists"})
+		utils.Response(w, r, 400, "a user with this username already exists")
 		return
 	}
 
 	// hash password
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), 8)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		render.JSON(w, r, map[string]string{"message": "issue with password hashing"})
+		utils.Response(w, r, 500, "error while hashing password")
 		return
 	}
 
@@ -144,11 +135,10 @@ func (s *Service) signUp(w http.ResponseWriter, r *http.Request) {
 		Email:        user.Email,
 	})
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		render.JSON(w, r, map[string]string{"message": "error with user creation in db"})
+		utils.Response(w, r, 500, err.Error())
 		log.Fatal(err.Error())
 		return
 	}
 
-	render.JSON(w, r, map[string]string{"message": "successfully created"})
+	utils.Response(w, r, 201, "account successfully created")
 }
