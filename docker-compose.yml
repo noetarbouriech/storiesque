@@ -10,5 +10,7 @@ services:
     ports:
       - 5431:5432
     volumes:
-      - ./sql/schema:/docker-entrypoint-initdb.d/schema
-      - ./sql/triggers.sql:/docker-entrypoint-initdb.d/create_triggers.sql
+      - ./sql/schema/0001_page.sql:/docker-entrypoint-initdb.d/0001_page.sql
+      - ./sql/schema/0002_story.sql:/docker-entrypoint-initdb.d/0002_story.sql
+      - ./sql/schema/0003_user.sql:/docker-entrypoint-initdb.d/0003_user.sql
+      - ./sql/trigger.sql:/docker-entrypoint-initdb.d/create_trigger.sql
