@@ -15,7 +15,7 @@ import (
 
 func main() {
 	// init database
-	pg, err := db.NewPostgres("localhost", "5431", "postgres", "test")
+	pg, err := db.NewPostgres("db", "5432", "postgres", "test")
 	if err != nil {
 		log.Fatal(err.Error())
 	}
