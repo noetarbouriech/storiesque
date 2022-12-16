@@ -13,4 +13,5 @@ services:
       - ./sql/schema/0001_page.sql:/docker-entrypoint-initdb.d/0001_page.sql
       - ./sql/schema/0002_story.sql:/docker-entrypoint-initdb.d/0002_story.sql
       - ./sql/schema/0003_user.sql:/docker-entrypoint-initdb.d/0003_user.sql
+      - ./sql/schema/0004_choices.sql:/docker-entrypoint-initdb.d/0004_choices.sql
       - ./sql/trigger.sql:/docker-entrypoint-initdb.d/create_trigger.sql

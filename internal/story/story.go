@@ -38,13 +38,19 @@ func init() {
 }
 
 func (s *Service) PublicRoutes(r chi.Router) {
-	r.Get("/story", s.getStories)
-	r.Get("/story/{id}", s.getStory)
+	r.Get("/story", s.getStories)    // get list of stories
+	r.Get("/story/{id}", s.getStory) // get a single story
+
+	r.Get("/page/{id}", s.getPage) // get a single page
 }
 
 func (s *Service) UserRoutes(r chi.Router) {
-	r.Post("/story", s.createStory)
-	r.Delete("/story/{id}", s.deleteStory)
+	r.Post("/story", s.createStory)        // create a story
+	r.Delete("/story/{id}", s.deleteStory) // delete a story
+
+	r.Post("/page/{id}", s.createPage)   // add a choice to a given page
+	r.Put("/page/{id}", s.updatePage)    // update a page
+	r.Delete("/page/{id}", s.deletePage) // delete a page (cascade delete choices)
 }
 
 func (s *Service) getStories(w http.ResponseWriter, r *http.Request) {

@@ -2,8 +2,8 @@ CREATE OR REPLACE FUNCTION before_story_insert() RETURNS trigger AS $before_stor
   DECLARE
     page_id int;
   BEGIN
-    INSERT INTO page(title, text)
-    VALUES('Welcome', 'Placeholder')
+    INSERT INTO page(title, body)
+    VALUES('Welcome', 'Here it all begins...')
     RETURNING id INTO page_id;
 
     NEW.first_page_id := page_id;
@@ -28,3 +28,16 @@ CREATE OR REPLACE TRIGGER after_story_delete
 AFTER DELETE ON story
 FOR EACH ROW
 EXECUTE FUNCTION after_story_delete();
+
+CREATE OR REPLACE FUNCTION after_choices_delete() RETURNS trigger AS $after_choices_delete$
+  BEGIN
+    DELETE FROM page
+    WHERE id = OLD.path_id;
+    RETURN OLD;
+  END;
+$after_choices_delete$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE TRIGGER after_choices_delete
+AFTER DELETE ON choices
+FOR EACH ROW
+EXECUTE FUNCTION after_choices_delete();

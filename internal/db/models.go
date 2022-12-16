@@ -8,10 +8,15 @@ import (
 	"database/sql"
 )
 
+type Choice struct {
+	PageID int64
+	PathID int64
+}
+
 type Page struct {
 	ID    int64
 	Title string
-	Text  string
+	Body  string
 }
 
 type Story struct {
