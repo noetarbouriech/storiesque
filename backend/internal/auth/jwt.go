@@ -5,7 +5,7 @@ import (
 
 	"github.com/go-chi/jwtauth/v5"
 	"github.com/lestrrat-go/jwx/v2/jwt"
-	"github.com/noetarbouriech/storiesque/internal/utils"
+	"github.com/noetarbouriech/storiesque/backend/internal/utils"
 )
 
 func (s *Service) Verifier() func(http.Handler) http.Handler {

@@ -10,8 +10,8 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/render"
 	"github.com/go-playground/validator/v10"
-	"github.com/noetarbouriech/storiesque/internal/db"
-	"github.com/noetarbouriech/storiesque/internal/utils"
+	"github.com/noetarbouriech/storiesque/backend/internal/db"
+	"github.com/noetarbouriech/storiesque/backend/internal/utils"
 	"golang.org/x/crypto/bcrypt"
 )
 

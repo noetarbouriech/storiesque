@@ -6,11 +6,11 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/noetarbouriech/storiesque/internal/api"
-	"github.com/noetarbouriech/storiesque/internal/auth"
-	"github.com/noetarbouriech/storiesque/internal/db"
-	"github.com/noetarbouriech/storiesque/internal/story"
-	"github.com/noetarbouriech/storiesque/internal/user"
+	"github.com/noetarbouriech/storiesque/backend/internal/api"
+	"github.com/noetarbouriech/storiesque/backend/internal/auth"
+	"github.com/noetarbouriech/storiesque/backend/internal/db"
+	"github.com/noetarbouriech/storiesque/backend/internal/story"
+	"github.com/noetarbouriech/storiesque/backend/internal/user"
 )
 
 func main() {

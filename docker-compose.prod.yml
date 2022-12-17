@@ -2,9 +2,7 @@ version: "3.9"
 services:
   api:
     container_name: "storiesque-api"
-    build: "."
-    # ports:
-    #   - 3000:3000
+    build: "backend/."
     depends_on:
       db:
         condition: service_healthy
@@ -23,11 +21,11 @@ services:
       timeout: 5s
       retries: 5
     volumes:
-      - ./sql/schema/0001_page.sql:/docker-entrypoint-initdb.d/0001_page.sql
-      - ./sql/schema/0002_story.sql:/docker-entrypoint-initdb.d/0002_story.sql
-      - ./sql/schema/0003_user.sql:/docker-entrypoint-initdb.d/0003_user.sql
-      - ./sql/schema/0004_choices.sql:/docker-entrypoint-initdb.d/0004_choices.sql
-      - ./sql/trigger.sql:/docker-entrypoint-initdb.d/create_trigger.sql
+      - ./backend/sql/schema/0001_page.sql:/docker-entrypoint-initdb.d/0001_page.sql
+      - ./backend/sql/schema/0002_story.sql:/docker-entrypoint-initdb.d/0002_story.sql
+      - ./backend/sql/schema/0003_user.sql:/docker-entrypoint-initdb.d/0003_user.sql
+      - ./backend/sql/schema/0004_choices.sql:/docker-entrypoint-initdb.d/0004_choices.sql
+      - ./backend/sql/trigger.sql:/docker-entrypoint-initdb.d/create_trigger.sql
   traefik:
     image: "traefik:v2.9"
     container_name: "traefik"
@@ -42,4 +40,3 @@ services:
       - "8080:8080"
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
-
