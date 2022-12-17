@@ -4,9 +4,10 @@ services:
     image: postgres
     container_name: "storiesque-db-dev"
     environment:
-      POSTGRES_PASSWORD: test
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
     ports:
-      - "5431:5432"
+      - "${DB_PORT}:5432"
     volumes:
       - ./backend/sql/schema/0001_page.sql:/docker-entrypoint-initdb.d/0001_page.sql
       - ./backend/sql/schema/0002_story.sql:/docker-entrypoint-initdb.d/0002_story.sql

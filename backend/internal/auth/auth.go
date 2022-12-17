@@ -19,12 +19,14 @@ import (
 type Service struct {
 	queries   *db.Queries
 	tokenAuth *jwtauth.JWTAuth
+	apiDomain string
 }
 
-func NewService(queries *db.Queries, jwt_secret string) *Service {
+func NewService(queries *db.Queries, jwt_secret string, api_domain string) *Service {
 	return &Service{
 		queries:   queries,
 		tokenAuth: jwtauth.New("HS256", []byte(jwt_secret), nil),
+		apiDomain: api_domain,
 	}
 }
 
@@ -85,7 +87,7 @@ func (s *Service) login(w http.ResponseWriter, r *http.Request) {
 		Name:       "jwt",
 		Value:      tokenString,
 		Path:       "",
-		Domain:     "localhost",
+		Domain:     s.apiDomain,
 		Expires:    expireTime,
 		RawExpires: "",
 		MaxAge:     10000,

@@ -4,8 +4,10 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/joho/godotenv"
 	"github.com/noetarbouriech/storiesque/backend/internal/api"
 	"github.com/noetarbouriech/storiesque/backend/internal/auth"
 	"github.com/noetarbouriech/storiesque/backend/internal/db"
@@ -14,8 +16,19 @@ import (
 )
 
 func main() {
+	// environment variables
+	err := godotenv.Load("../.env")
+	if err != nil {
+		fmt.Println("Error loading .env file")
+	}
+
 	// init database
-	pg, err := db.NewPostgres("db", "5432", "postgres", "test")
+	pg, err := db.NewPostgres(
+		os.Getenv("DB_HOST"),
+		os.Getenv("DB_PORT"),
+		os.Getenv("DB_USER"),
+		os.Getenv("DB_PASSWORD"),
+	)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
@@ -25,7 +38,7 @@ func main() {
 	router := api.CreateRouter()
 
 	// init services
-	authService := auth.NewService(queries, "temp_secret")
+	authService := auth.NewService(queries, os.Getenv("JWT_SECRET"), os.Getenv("API_DOMAIN"))
 	storyService := story.NewService(queries)
 	userService := user.NewService(queries)
 
@@ -45,6 +58,6 @@ func main() {
 		r.Group(storyService.UserRoutes)
 	})
 
-	fmt.Println("Starting server on port 3000")
-	http.ListenAndServe(":3000", router)
+	fmt.Println("Starting Storiesque api on " + os.Getenv("API_PORT"))
+	http.ListenAndServe(":"+os.Getenv("API_PORT"), router)
 }
