@@ -1,7 +1,7 @@
 <script lang="ts">
-    let items = ["test1", "test2", "etc", "tet", "´asdfasdf","dsfasddas","sdasdsad"];
+    let items = ["username1", "test2", "etc", "tet", "´asdfasdf","dsfasddas","sdasdsad"];
     import { Heading, PaginationItem } from 'flowbite-svelte'
-    import StoryCard from '$lib/StoryCard.svelte';
+    import UserCard from '$lib/UserCard.svelte';
 
     const previous = () => {
         alert('Previous btn clicked. Make a call to your server to fetch data.');
@@ -10,10 +10,10 @@
         alert('Next btn clicked. Make a call to your server to fetch data.');
     };
 </script>
-<Heading class="text-center" tag="h1">Stories</Heading>
-<div class="max-w-2xl mx-auto px-4 py-8 lg:max-w-7xl grid grid-cols-1 gap-y-10 sm:grid-cols-2 gap-x-8 lg:grid-cols-3">
+<Heading class="text-center" tag="h1">Users</Heading>
+<div class="max-w-2xl mx-auto px-4 py-8 lg:max-w-7xl grid grid-cols-1 gap-y-10 sm:grid-cols-2 gap-x-8 lg:grid-cols-3 xl:grid-cols-4">
     {#each items as item}
-        <StoryCard title={item}></StoryCard>
+        <UserCard username={item}></UserCard>
     {/each}
 </div>
 
