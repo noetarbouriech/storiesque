@@ -1,7 +1,9 @@
 <script lang="ts">
-    let items = ["test1", "test2", "etc", "tet", "´asdfasdf","dsfasddas","sdasdsad"];
     import { Heading, PaginationItem } from 'flowbite-svelte'
     import StoryCard from '$lib/StoryCard.svelte';
+    import type { PageData } from './$types';
+
+    export let data: PageData;
 
     const previous = () => {
         alert('Previous btn clicked. Make a call to your server to fetch data.');
@@ -12,8 +14,11 @@
 </script>
 <Heading class="text-center" tag="h1">Stories</Heading>
 <div class="max-w-2xl mx-auto px-4 py-8 lg:max-w-7xl grid grid-cols-1 gap-y-10 sm:grid-cols-2 gap-x-8 lg:grid-cols-3">
-    {#each items as item}
-        <StoryCard title={item}></StoryCard>
+    {#each data.stories as story}
+        <StoryCard
+            title={story.title}
+            description={story.description}
+        ></StoryCard>
     {/each}
 </div>
 
