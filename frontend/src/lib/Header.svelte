@@ -1,6 +1,6 @@
 <script>
     import { Navbar, NavBrand, NavLi, NavUl, NavHamburger, Avatar, Dropdown, DropdownItem, DropdownHeader, DropdownDivider, DarkMode } from 'flowbite-svelte'
-    import { Link } from 'svelte-heros-v2';
+    import { page } from '$app/stores';
 </script>
 
 <Navbar let:hidden let:toggle>
@@ -25,8 +25,8 @@
     <DropdownItem>Sign out</DropdownItem>
 </Dropdown>
 <NavUl {hidden}>
-    <NavLi href="/" active={true}>Home</NavLi>
-    <NavLi href="/story">Stories</NavLi>
-    <NavLi href="/user">Users</NavLi>
+    <NavLi href="/" active={$page.url.pathname == "/"}>Home</NavLi>
+    <NavLi href="/story" active={$page.url.pathname.startsWith("/story")}>Stories</NavLi>
+    <NavLi href="/user" active={$page.url.pathname.startsWith("/user")}>Users</NavLi>
 </NavUl>
 </Navbar>

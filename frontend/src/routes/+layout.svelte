@@ -5,7 +5,7 @@
 </script>
 
 <Header />
-<main class="container mx-auto py-16 px-8 dark:text-white ">
+<main class="container mx-auto py-14 px-8 dark:text-white ">
 	<slot />
 </main>
 <Footer />
