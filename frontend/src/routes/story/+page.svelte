@@ -18,6 +18,7 @@
         <StoryCard
             title={story.title}
             description={story.description}
+            id={story.id}
         ></StoryCard>
     {/each}
 </div>

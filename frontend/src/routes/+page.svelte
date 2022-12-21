@@ -9,7 +9,7 @@ import { PencilSquare } from 'svelte-heros-v2'
     You're not forced to follow the story anymore, you're the one who's controlling <strong>your own path</strong>!
 </P>
 
-<div class="flex justify-center py-4 gap-x-4">
+<div class="flex justify-center py-8 gap-x-4">
     <Button gradient color="greenToBlue" class="font-extrabold bg-gradient-to-r to-emerald-600 from-sky-400">
         <PencilSquare/>Write your story
     </Button>
@@ -17,20 +17,23 @@ import { PencilSquare } from 'svelte-heros-v2'
 </div>
 
 <Heading align="center" tag="h2" class="mt-16 mb-2">
-    Some of our personnal <Span underline>favorites</Span>...
+    Some of our personal <Span underline>favorites</Span>...
 </Heading>
-<div class="max-w-2xl mx-auto px-4 py-8 lg:max-w-7xl grid grid-cols-1 gap-y-10 sm:grid-cols-2 gap-x-8 lg:grid-cols-3">
+<div class="max-w-2xl mx-auto px-4 py-6 lg:max-w-7xl grid grid-cols-1 gap-y-10 sm:grid-cols-2 gap-x-8 lg:grid-cols-3">
     <StoryCard
         title="Great story"
         description="This one is really good. I can recommend it !"
+        id={1}
     ></StoryCard>
     <StoryCard
         title="Great story"
         description="This one is really good. I can recommend it !"
+        id={2}
     ></StoryCard>
     <StoryCard
         title="Great story"
         description="This one is really good. I can recommend it !"
+        id={3}
     ></StoryCard>
 </div>
 

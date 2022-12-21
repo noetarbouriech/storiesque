@@ -5,12 +5,12 @@
 
 <Navbar let:hidden let:toggle>
 <NavBrand href="/">
-    <img src="https://flowbite.com/docs/images/logo.svg" class="mr-3 h-6 sm:h-9" alt="Flowbite Logo"/>
+    <img src="https://hotemoji.com/images/dl/f/open-book-emoji-by-twitter.png" class="mr-3 h-6 sm:h-9" alt="Storiesque Logo"/>
     <span class="self-center whitespace-nowrap text-xl font-semibold dark:text-white">Storiesque</span>
 </NavBrand>
 <div class="flex items-center md:order-2">
     <DarkMode />
-    <Avatar id="avatar-menu">US</Avatar>
+    <Avatar class="cursor-pointer" id="avatar-menu">US</Avatar>
     <NavHamburger on:click={toggle} class1="w-full md:flex md:w-auto md:order-1"/>
 </div>
 <Dropdown placement="bottom" triggeredBy="#avatar-menu">
