@@ -12,7 +12,7 @@
         alert('Next btn clicked. Make a call to your server to fetch data.');
     };
 </script>
-<Heading class="text-center" tag="h1">Stories</Heading>
+<Heading class="text-center" tag="h1">📖 Stories</Heading>
 <div class="max-w-2xl mx-auto px-4 py-8 lg:max-w-7xl grid grid-cols-1 gap-y-10 sm:grid-cols-2 gap-x-8 lg:grid-cols-3">
     {#each data.stories as story}
         <StoryCard

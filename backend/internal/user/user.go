@@ -45,7 +45,7 @@ func init() {
 
 func (s *Service) PublicRoutes(r chi.Router) {
 	r.Get("/user", s.getUsers)
-	r.Get("/user/{id}", s.getUser)
+	r.Get("/user/{username}", s.getUser)
 }
 
 func (s *Service) UserRoutes(r chi.Router) {
@@ -66,6 +66,7 @@ func (s *Service) getUsers(w http.ResponseWriter, r *http.Request) {
 			Id:       user.ID,
 			Username: user.Username,
 			Email:    user.Email,
+			IsAdmin:  user.IsAdmin,
 		}
 		rUsers = append(rUsers, rUser)
 	}
@@ -73,12 +74,8 @@ func (s *Service) getUsers(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Service) getUser(w http.ResponseWriter, r *http.Request) {
-	id, errInt := strconv.Atoi(chi.URLParam(r, "id"))
-	if errInt != nil {
-		utils.Response(w, r, 400, "impossible to parse user id")
-		return
-	}
-	user, err := s.queries.GetUser(context.Background(), int64(id))
+	username := chi.URLParam(r, "username")
+	user, err := s.queries.GetUserWithUsername(context.Background(), username)
 	if err != nil {
 		utils.Response(w, r, 404, "user not found")
 		return
@@ -87,6 +84,7 @@ func (s *Service) getUser(w http.ResponseWriter, r *http.Request) {
 		Id:       user.ID,
 		Username: user.Username,
 		Email:    user.Email,
+		IsAdmin:  user.IsAdmin,
 	}
 	render.JSON(w, r, userJson)
 }
