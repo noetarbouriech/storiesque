@@ -54,7 +54,8 @@ func (s *Service) UserRoutes(r chi.Router) {
 }
 
 func (s *Service) getStories(w http.ResponseWriter, r *http.Request) {
-	stories, err := s.queries.ListStories(context.Background())
+	title := r.URL.Query().Get("title")
+	stories, err := s.queries.SearchStories(context.Background(), sql.NullString{String: title, Valid: true})
 	if err != nil {
 		utils.Response(w, r, 404, "story not found")
 		return

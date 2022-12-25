@@ -13,7 +13,7 @@ import (
 const createStory = `-- name: CreateStory :one
 INSERT INTO story (title, description)
 VALUES ($1, $2)
-RETURNING id, title, description, first_page_id
+RETURNING id, title, description, author, first_page_id
 `
 
 type CreateStoryParams struct {
@@ -28,6 +28,7 @@ func (q *Queries) CreateStory(ctx context.Context, arg CreateStoryParams) (Story
 		&i.ID,
 		&i.Title,
 		&i.Description,
+		&i.Author,
 		&i.FirstPageID,
 	)
 	return i, err
@@ -44,7 +45,7 @@ func (q *Queries) DeleteStory(ctx context.Context, id int64) error {
 }
 
 const getStory = `-- name: GetStory :one
-SELECT id, title, description, first_page_id FROM story
+SELECT id, title, description, author, first_page_id FROM story
 WHERE id = $1 LIMIT 1
 `
 
@@ -55,13 +56,14 @@ func (q *Queries) GetStory(ctx context.Context, id int64) (Story, error) {
 		&i.ID,
 		&i.Title,
 		&i.Description,
+		&i.Author,
 		&i.FirstPageID,
 	)
 	return i, err
 }
 
 const listStories = `-- name: ListStories :many
-SELECT id, title, description, first_page_id FROM story
+SELECT id, title, description, author, first_page_id FROM story
 ORDER BY title
 `
 
@@ -78,6 +80,42 @@ func (q *Queries) ListStories(ctx context.Context) ([]Story, error) {
 			&i.ID,
 			&i.Title,
 			&i.Description,
+			&i.Author,
+			&i.FirstPageID,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const searchStories = `-- name: SearchStories :many
+SELECT id, title, description, author, first_page_id FROM story s
+WHERE title LIKE '%' || $1 || '%'
+ORDER BY title
+`
+
+func (q *Queries) SearchStories(ctx context.Context, title sql.NullString) ([]Story, error) {
+	rows, err := q.db.QueryContext(ctx, searchStories, title)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Story
+	for rows.Next() {
+		var i Story
+		if err := rows.Scan(
+			&i.ID,
+			&i.Title,
+			&i.Description,
+			&i.Author,
 			&i.FirstPageID,
 		); err != nil {
 			return nil, err

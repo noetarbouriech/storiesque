@@ -23,6 +23,7 @@ type Story struct {
 	ID          int64
 	Title       string
 	Description sql.NullString
+	Author      sql.NullInt64
 	FirstPageID sql.NullInt64
 }
 

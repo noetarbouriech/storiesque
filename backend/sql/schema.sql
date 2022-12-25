@@ -1,0 +1,30 @@
+CREATE TABLE "user"
+(
+  id BIGSERIAL PRIMARY KEY,
+  username VARCHAR(24) NOT NULL,
+  password_hash VARCHAR(64) NOT NULL,
+  is_admin BOOLEAN NOT NULL DEFAULT false,
+  email VARCHAR(128) NOT NULL
+);
+
+CREATE TABLE page
+(
+  id BIGSERIAL PRIMARY KEY,
+  title VARCHAR(32) NOT NULL,
+  body VARCHAR(4096) NOT NULL
+);
+
+CREATE TABLE story
+(
+  id BIGSERIAL PRIMARY KEY,
+  title VARCHAR(32) NOT NULL,
+  description VARCHAR(512),
+  author BIGSERIAL REFERENCES "user"(id),
+  first_page_id BIGSERIAL REFERENCES page(id)
+);
+
+CREATE TABLE choices
+(
+  page_id BIGSERIAL NOT NULL REFERENCES page(id) ON DELETE CASCADE,
+  path_id BIGSERIAL NOT NULL REFERENCES page(id) ON DELETE CASCADE
+);

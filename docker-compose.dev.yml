@@ -9,8 +9,5 @@ services:
     ports:
       - "${DB_PORT}:5432"
     volumes:
-      - ./backend/sql/schema/0001_page.sql:/docker-entrypoint-initdb.d/0001_page.sql
-      - ./backend/sql/schema/0002_story.sql:/docker-entrypoint-initdb.d/0002_story.sql
-      - ./backend/sql/schema/0003_user.sql:/docker-entrypoint-initdb.d/0003_user.sql
-      - ./backend/sql/schema/0004_choices.sql:/docker-entrypoint-initdb.d/0004_choices.sql
+      - ./backend/sql/schema.sql:/docker-entrypoint-initdb.d/create_schema.sql
       - ./backend/sql/trigger.sql:/docker-entrypoint-initdb.d/create_trigger.sql
