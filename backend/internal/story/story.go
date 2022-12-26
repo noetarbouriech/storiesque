@@ -4,11 +4,11 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
-	"log"
 	"net/http"
 	"strconv"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/jwtauth/v5"
 	"github.com/go-chi/render"
 	"github.com/go-playground/validator/v10"
 	"github.com/noetarbouriech/storiesque/backend/internal/db"
@@ -23,11 +23,26 @@ func NewService(queries *db.Queries) *Service {
 	return &Service{queries: queries}
 }
 
-type Story struct {
+type StoryCard struct {
+	Id          int64  `json:"id"`
+	Title       string `json:"title"`
+	Description string `json:"description"`
+	AuthorName  string `json:"author_name"`
+}
+
+type StoryCreation struct {
+	Id          int64  `json:"id"`
+	Title       string `json:"title"         validate:"required,gte=0,lte=48"`
+	Description string `json:"description"   validate:"lte=512"`
+	AuthorId    int64  `json:"author_id"`
+}
+
+type StoryDetails struct {
 	Id            int64  `json:"id"`
-	Title         string `json:"title"         validate:"required,gte=0,lte=32"`
-	Description   string `json:"description"   validate:"lte=512"`
+	Title         string `json:"title"`
+	Description   string `json:"description"`
 	First_page_id int64  `json:"first_page_id"`
+	AuthorName    string `json:"author_name"`
 }
 
 // use a single instance of Validate, it caches struct info
@@ -54,47 +69,56 @@ func (s *Service) UserRoutes(r chi.Router) {
 }
 
 func (s *Service) getStories(w http.ResponseWriter, r *http.Request) {
+
+	// get stories with filter by name
 	title := r.URL.Query().Get("title")
 	stories, err := s.queries.SearchStories(context.Background(), sql.NullString{String: title, Valid: true})
 	if err != nil {
 		utils.Response(w, r, 404, "story not found")
 		return
 	}
-	rStories := []Story{}
+
+	rStories := []StoryCard{}
 	for _, story := range stories {
-		rStory := Story{
-			Id:            story.ID,
-			Title:         story.Title,
-			Description:   story.Description.String,
-			First_page_id: story.FirstPageID.Int64,
+		rStory := StoryCard{
+			Id:          story.ID,
+			Title:       story.Title,
+			Description: story.Description.String,
+			AuthorName:  story.AuthorName,
 		}
 		rStories = append(rStories, rStory)
 	}
+
 	render.JSON(w, r, rStories)
 }
 
 func (s *Service) getStory(w http.ResponseWriter, r *http.Request) {
+	// get id in url
 	id, errInt := strconv.Atoi(chi.URLParam(r, "id"))
 	if errInt != nil {
 		utils.Response(w, r, 400, "impossible to parse story id")
 		return
 	}
+
+	// get story from db
 	story, err := s.queries.GetStory(context.Background(), int64(id))
 	if err != nil {
 		utils.Response(w, r, 404, "story not found")
 		return
 	}
-	storyJson := Story{
+	storyJson := StoryDetails{
 		Id:            story.ID,
 		Title:         story.Title,
 		Description:   story.Description.String,
 		First_page_id: story.FirstPageID.Int64,
+		AuthorName:    story.AuthorName,
 	}
+
 	render.JSON(w, r, storyJson)
 }
 
 func (s *Service) createStory(w http.ResponseWriter, r *http.Request) {
-	var story Story
+	var story StoryCreation
 
 	// translate json to struct
 	errJson := json.NewDecoder(r.Body).Decode(&story)
@@ -110,14 +134,21 @@ func (s *Service) createStory(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// get infos from jwt
+	_, claims, err := jwtauth.FromContext(r.Context())
+	if err != nil {
+		utils.Response(w, r, http.StatusUnauthorized, "not logged in")
+		return
+	}
+
 	// create story in db
 	_, err = s.queries.CreateStory(context.Background(), db.CreateStoryParams{
 		Title:       story.Title,
 		Description: sql.NullString{String: story.Description, Valid: true},
+		Author:      int64(claims["id"].(float64)),
 	})
 	if err != nil {
 		utils.Response(w, r, 500, err.Error())
-		log.Fatal(err.Error())
 		return
 	}
 

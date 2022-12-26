@@ -18,6 +18,7 @@
         <StoryCard
             title={story.title}
             description={story.description}
+            author={story.author_name}
             id={story.id}
         ></StoryCard>
     {/each}

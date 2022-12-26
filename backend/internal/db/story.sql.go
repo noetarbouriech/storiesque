@@ -11,18 +11,19 @@ import (
 )
 
 const createStory = `-- name: CreateStory :one
-INSERT INTO story (title, description)
-VALUES ($1, $2)
+INSERT INTO story (title, description, author)
+VALUES ($1, $2, $3)
 RETURNING id, title, description, author, first_page_id
 `
 
 type CreateStoryParams struct {
 	Title       string
 	Description sql.NullString
+	Author      int64
 }
 
 func (q *Queries) CreateStory(ctx context.Context, arg CreateStoryParams) (Story, error) {
-	row := q.db.QueryRowContext(ctx, createStory, arg.Title, arg.Description)
+	row := q.db.QueryRowContext(ctx, createStory, arg.Title, arg.Description, arg.Author)
 	var i Story
 	err := row.Scan(
 		&i.ID,
@@ -45,78 +46,60 @@ func (q *Queries) DeleteStory(ctx context.Context, id int64) error {
 }
 
 const getStory = `-- name: GetStory :one
-SELECT id, title, description, author, first_page_id FROM story
-WHERE id = $1 LIMIT 1
+SELECT s.id, s.title, s.description, s.first_page_id, u.username as author_name FROM story s
+JOIN "user" u ON s.author = u.id
+WHERE s.id = $1 LIMIT 1
 `
 
-func (q *Queries) GetStory(ctx context.Context, id int64) (Story, error) {
+type GetStoryRow struct {
+	ID          int64
+	Title       string
+	Description sql.NullString
+	FirstPageID sql.NullInt64
+	AuthorName  string
+}
+
+func (q *Queries) GetStory(ctx context.Context, id int64) (GetStoryRow, error) {
 	row := q.db.QueryRowContext(ctx, getStory, id)
-	var i Story
+	var i GetStoryRow
 	err := row.Scan(
 		&i.ID,
 		&i.Title,
 		&i.Description,
-		&i.Author,
 		&i.FirstPageID,
+		&i.AuthorName,
 	)
 	return i, err
 }
 
-const listStories = `-- name: ListStories :many
-SELECT id, title, description, author, first_page_id FROM story
-ORDER BY title
-`
-
-func (q *Queries) ListStories(ctx context.Context) ([]Story, error) {
-	rows, err := q.db.QueryContext(ctx, listStories)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []Story
-	for rows.Next() {
-		var i Story
-		if err := rows.Scan(
-			&i.ID,
-			&i.Title,
-			&i.Description,
-			&i.Author,
-			&i.FirstPageID,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
 const searchStories = `-- name: SearchStories :many
-SELECT id, title, description, author, first_page_id FROM story s
+SELECT s.id, s.title, s.description, u.username as author_name FROM story s
+JOIN "user" u ON s.author = u.id
 WHERE title LIKE '%' || $1 || '%'
 ORDER BY title
 `
 
-func (q *Queries) SearchStories(ctx context.Context, title sql.NullString) ([]Story, error) {
+type SearchStoriesRow struct {
+	ID          int64
+	Title       string
+	Description sql.NullString
+	AuthorName  string
+}
+
+func (q *Queries) SearchStories(ctx context.Context, title sql.NullString) ([]SearchStoriesRow, error) {
 	rows, err := q.db.QueryContext(ctx, searchStories, title)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Story
+	var items []SearchStoriesRow
 	for rows.Next() {
-		var i Story
+		var i SearchStoriesRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.Title,
 			&i.Description,
-			&i.Author,
-			&i.FirstPageID,
+			&i.AuthorName,
 		); err != nil {
 			return nil, err
 		}

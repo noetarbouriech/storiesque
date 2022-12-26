@@ -1,19 +1,17 @@
 -- name: GetStory :one
-SELECT * FROM story
-WHERE id = $1 LIMIT 1;
-
--- name: ListStories :many
-SELECT * FROM story
-ORDER BY title;
+SELECT s.id, s.title, s.description, s.first_page_id, u.username as author_name FROM story s
+JOIN "user" u ON s.author = u.id
+WHERE s.id = $1 LIMIT 1;
 
 -- name: SearchStories :many
-SELECT * FROM story s
+SELECT s.id, s.title, s.description, u.username as author_name FROM story s
+JOIN "user" u ON s.author = u.id
 WHERE title LIKE '%' || @title || '%'
 ORDER BY title;
 
 -- name: CreateStory :one
-INSERT INTO story (title, description)
-VALUES ($1, $2)
+INSERT INTO story (title, description, author)
+VALUES ($1, $2, $3)
 RETURNING *;
 
 -- name: DeleteStory :exec

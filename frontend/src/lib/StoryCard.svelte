@@ -3,6 +3,7 @@
     export let title : String;
     export let description : String;
     export let id : Number;
+    export let author : String;
 
     if (description.length > 103) {
       description = description.substring(0,100) + "...";
@@ -10,7 +11,8 @@
 </script>
 
 <Card img="https://loremflickr.com/320/240">
-  <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">{title}</h5>
+  <h3 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">{title}</h3>
+  <h4 class="mb-2 text-l tracking-tight text-gray-900 dark:text-white">by <a class="font-bold" href="/user/{author}">@{author}</a></h4>
   <p class="mb-3 font-normal text-gray-700 dark:text-gray-400 leading-tight">
     {description}
   </p>

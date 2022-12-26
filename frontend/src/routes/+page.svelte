@@ -23,16 +23,19 @@ import { PencilSquare } from 'svelte-heros-v2'
     <StoryCard
         title="Great story"
         description="This one is really good. I can recommend it !"
+        author="user1"
         id={1}
     ></StoryCard>
     <StoryCard
         title="Great story"
         description="This one is really good. I can recommend it !"
+        author="user1"
         id={2}
     ></StoryCard>
     <StoryCard
         title="Great story"
         description="This one is really good. I can recommend it !"
+        author="user1"
         id={3}
     ></StoryCard>
 </div>
