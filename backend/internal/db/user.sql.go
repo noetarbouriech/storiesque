@@ -7,6 +7,7 @@ package db
 
 import (
 	"context"
+	"database/sql"
 )
 
 const createUser = `-- name: CreateUser :one
@@ -44,22 +45,53 @@ func (q *Queries) DeleteUser(ctx context.Context, id int64) error {
 	return err
 }
 
-const getUser = `-- name: GetUser :one
-SELECT id, username, password_hash, is_admin, email FROM "user"
-WHERE id = $1 LIMIT 1
+const getUserDetails = `-- name: GetUserDetails :many
+SELECT u.id, u.username, u.password_hash, u.is_admin, u.email, s.id as story_id, s.title, s.description FROM "user" u
+LEFT JOIN story s ON u.id = s.author
+WHERE username = $1
 `
 
-func (q *Queries) GetUser(ctx context.Context, id int64) (User, error) {
-	row := q.db.QueryRowContext(ctx, getUser, id)
-	var i User
-	err := row.Scan(
-		&i.ID,
-		&i.Username,
-		&i.PasswordHash,
-		&i.IsAdmin,
-		&i.Email,
-	)
-	return i, err
+type GetUserDetailsRow struct {
+	ID           int64
+	Username     string
+	PasswordHash string
+	IsAdmin      bool
+	Email        string
+	StoryID      sql.NullInt64
+	Title        sql.NullString
+	Description  sql.NullString
+}
+
+func (q *Queries) GetUserDetails(ctx context.Context, username string) ([]GetUserDetailsRow, error) {
+	rows, err := q.db.QueryContext(ctx, getUserDetails, username)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetUserDetailsRow
+	for rows.Next() {
+		var i GetUserDetailsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Username,
+			&i.PasswordHash,
+			&i.IsAdmin,
+			&i.Email,
+			&i.StoryID,
+			&i.Title,
+			&i.Description,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const getUserWithEmail = `-- name: GetUserWithEmail :one

@@ -1,7 +1,3 @@
--- name: GetUser :one
-SELECT * FROM "user"
-WHERE id = $1 LIMIT 1;
-
 -- name: GetUserWithEmail :one
 SELECT * FROM "user"
 WHERE email = $1 LIMIT 1;
@@ -9,6 +5,11 @@ WHERE email = $1 LIMIT 1;
 -- name: GetUserWithUsername :one
 SELECT * FROM "user"
 WHERE username = $1 LIMIT 1;
+
+-- name: GetUserDetails :many
+SELECT u.*, s.id as story_id, s.title, s.description FROM "user" u
+LEFT JOIN story s ON u.id = s.author
+WHERE username = $1;
 
 -- name: CreateUser :one
 INSERT INTO "user" (username, password_hash, email)

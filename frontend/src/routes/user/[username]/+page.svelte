@@ -10,14 +10,15 @@
 <Card padding='sm' class="mx-auto">
 <Avatar class="mx-auto mb-8" size="xl" data-name=data.user.username></Avatar>
 <Heading customSize="text-3xl font-extrabold md:text-5xl" class="text-center pb-8" tag="h1">
-    {data.user.username} {#if data.user.is_admin} <CheckBadge size="50" class="inline"/><Tooltip>Admin</Tooltip>{/if}
+    @{data.user.username} {#if data.user.is_admin} <CheckBadge size="50" class="inline"/><Tooltip>Admin</Tooltip>{/if}
 </Heading>
 <span class="text-center text-m text-gray-500 dark:text-gray-400">Joined in 2022</span>
+<span class="text-center text-m text-gray-500 dark:text-gray-400">Has written {data.user.stories.length} stories</span>
 </Card>
 
 <Heading class="text-center mt-16 mb-4" tag="h1">Author of</Heading>
 <div class="max-w-2xl mx-auto px-4 py-8 lg:max-w-7xl grid grid-cols-1 gap-y-10 sm:grid-cols-2 gap-x-8 lg:grid-cols-3">
-    {#each data.stories as story}
+    {#each data.user.stories as story}
         <StoryCard
             title={story.title}
             description={story.description}

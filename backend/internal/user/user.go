@@ -36,6 +36,21 @@ type User struct {
 	IsAdmin  bool   `json:"is_admin"`
 }
 
+type UserDetails struct {
+	Id       int64       `json:"id"`
+	Username string      `json:"username"`
+	Email    string      `json:"email"`
+	IsAdmin  bool        `json:"is_admin"`
+	Stories  []StoryCard `json:"stories"`
+}
+
+type StoryCard struct {
+	Id          int64  `json:"id"`
+	Title       string `json:"title"`
+	Description string `json:"description"`
+	AuthorName  string `json:"author_name"`
+}
+
 // use a single instance of Validate, it caches struct info
 var validate *validator.Validate
 
@@ -74,19 +89,38 @@ func (s *Service) getUsers(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Service) getUser(w http.ResponseWriter, r *http.Request) {
-	username := chi.URLParam(r, "username")
-	user, err := s.queries.GetUserWithUsername(context.Background(), username)
+	// get username in uri
+	user, err := s.queries.GetUserDetails(
+		context.Background(),
+		chi.URLParam(r, "username"),
+	)
 	if err != nil {
 		utils.Response(w, r, 404, "user not found")
 		return
 	}
-	userJson := User{
-		Id:       user.ID,
-		Username: user.Username,
-		Email:    user.Email,
-		IsAdmin:  user.IsAdmin,
+
+	// list stories written by given user
+	stories := []StoryCard{}
+	if user[0].StoryID.Valid {
+		for _, line := range user {
+			story := StoryCard{
+				Id:          line.StoryID.Int64,
+				Title:       line.Title.String,
+				Description: line.Description.String,
+				AuthorName:  line.Username,
+			}
+			stories = append(stories, story)
+		}
 	}
-	render.JSON(w, r, userJson)
+
+	// render json of user
+	render.JSON(w, r, UserDetails{
+		Id:       user[0].ID,
+		Username: user[0].Username,
+		Email:    user[0].Email,
+		IsAdmin:  user[0].IsAdmin,
+		Stories:  stories,
+	})
 }
 
 func (s *Service) createUser(w http.ResponseWriter, r *http.Request) {
