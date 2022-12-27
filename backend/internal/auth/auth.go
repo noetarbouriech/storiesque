@@ -9,6 +9,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/jwtauth/v5"
+	"github.com/go-chi/render"
 	"github.com/go-playground/validator/v10"
 	"github.com/noetarbouriech/storiesque/backend/internal/db"
 	"github.com/noetarbouriech/storiesque/backend/internal/user"
@@ -58,13 +59,13 @@ func (s *Service) login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// get user
-	user, err := s.queries.GetUserWithEmail(context.Background(), credentials.Email)
+	userDB, err := s.queries.GetUserWithEmail(context.Background(), credentials.Email)
 	if err != nil {
 		utils.Response(w, r, 404, "account not found")
 		return
 	}
 
-	if err = bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(credentials.Password)); err != nil {
+	if err = bcrypt.CompareHashAndPassword([]byte(userDB.PasswordHash), []byte(credentials.Password)); err != nil {
 		utils.Response(w, r, 400, "wrong password")
 		return
 	}
@@ -72,8 +73,8 @@ func (s *Service) login(w http.ResponseWriter, r *http.Request) {
 	// create token
 	expireTime := time.Now().Add(15 * time.Minute)
 	_, tokenString, err := s.tokenAuth.Encode(map[string]interface{}{
-		"name": user.Username,     // username
-		"id":   user.ID,           // user id
+		"name": userDB.Username,   // username
+		"id":   userDB.ID,         // user id
 		"iat":  time.Now(),        // issued time
 		"exp":  expireTime.Unix(), // expire time
 	})
@@ -98,7 +99,12 @@ func (s *Service) login(w http.ResponseWriter, r *http.Request) {
 		Unparsed:   []string{},
 	})
 
-	utils.Response(w, r, 200, "successfully logged in")
+	render.JSON(w, r, user.User{
+		Id:       userDB.ID,
+		Username: userDB.Username,
+		Email:    userDB.Email,
+		IsAdmin:  userDB.IsAdmin,
+	})
 }
 
 func (s *Service) signUp(w http.ResponseWriter, r *http.Request) {
