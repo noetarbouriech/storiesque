@@ -1,5 +1,6 @@
 <script lang="ts">
     import { Heading, P, Hr, Img, Button } from 'flowbite-svelte'
+    import slugify from 'slugify';
     import type { PageData } from './$types';
     import { Play } from 'svelte-heros-v2'
 
@@ -15,7 +16,7 @@
 <P class="mx-auto max-w-xl" align="center" weight="light" color="text-gray-500 dark:text-gray-400">{data.story.description}</P>
 
 <div class="flex justify-center py-8 gap-x-4">
-    <Button gradient color="greenToBlue" class="w-fit font-extrabold bg-gradient-to-r to-emerald-600 from-sky-400" href="/story/{data.story.id}/read">
+    <Button gradient color="greenToBlue" class="w-fit font-extrabold bg-gradient-to-r to-emerald-600 from-sky-400" href="/story/{slugify(data.story.title,{lower: true})}-{data.story.id}/read">
         <Play class="mr-1" variation="solid"/>Begin story
     </Button>
 </div>
