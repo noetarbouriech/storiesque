@@ -14,9 +14,9 @@ type Choice struct {
 }
 
 type Page struct {
-	ID    int64
-	Title string
-	Body  string
+	ID     int64
+	Action string
+	Body   string
 }
 
 type Story struct {

@@ -28,23 +28,29 @@ func (q *Queries) CreateChoices(ctx context.Context, arg CreateChoicesParams) (C
 }
 
 const listChoices = `-- name: ListChoices :many
-SELECT path_id FROM choices
+SELECT p.action, c.path_id FROM choices c
+JOIN page p ON c.path_id = p.id
 WHERE page_id = $1
 `
 
-func (q *Queries) ListChoices(ctx context.Context, pageID int64) ([]int64, error) {
+type ListChoicesRow struct {
+	Action string
+	PathID int64
+}
+
+func (q *Queries) ListChoices(ctx context.Context, pageID int64) ([]ListChoicesRow, error) {
 	rows, err := q.db.QueryContext(ctx, listChoices, pageID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []int64
+	var items []ListChoicesRow
 	for rows.Next() {
-		var path_id int64
-		if err := rows.Scan(&path_id); err != nil {
+		var i ListChoicesRow
+		if err := rows.Scan(&i.Action, &i.PathID); err != nil {
 			return nil, err
 		}
-		items = append(items, path_id)
+		items = append(items, i)
 	}
 	if err := rows.Close(); err != nil {
 		return nil, err

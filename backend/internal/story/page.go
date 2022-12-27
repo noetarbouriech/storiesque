@@ -14,11 +14,16 @@ import (
 	"github.com/noetarbouriech/storiesque/backend/internal/utils"
 )
 
+type PageChoices struct {
+	Id     int64  `json:"page_id"`
+	Action string `json:"action"`
+}
+
 type Page struct {
-	Id      int64   `json:"id"`
-	Title   string  `json:"title"             validate:"gte=0,lte=32"`
-	Body    string  `json:"body"              validate:"gte=0,lte=4096"`
-	Choices []int64 `json:"choices,omitempty"`
+	Id      int64         `json:"id"`
+	Action  string        `json:"action"             validate:"gte=0,lte=64"`
+	Body    string        `json:"body"              validate:"gte=0,lte=4096"`
+	Choices []PageChoices `json:"choices,omitempty"`
 }
 
 func (s *Service) getPage(w http.ResponseWriter, r *http.Request) {
@@ -43,11 +48,20 @@ func (s *Service) getPage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// map choices
+	choicesStruct := []PageChoices{}
+	for _, choice := range choices {
+		choicesStruct = append(choicesStruct, PageChoices{
+			Id:     choice.PathID,
+			Action: choice.Action,
+		})
+	}
+
 	pageJson := Page{
 		Id:      page.ID,
-		Title:   page.Title,
+		Action:  page.Action,
 		Body:    page.Body,
-		Choices: choices,
+		Choices: choicesStruct,
 	}
 	render.JSON(w, r, pageJson)
 }
@@ -69,8 +83,8 @@ func (s *Service) createPage(w http.ResponseWriter, r *http.Request) {
 
 	// create page in db
 	page, err := s.queries.CreatePage(context.Background(), db.CreatePageParams{
-		Title: "New Page",
-		Body:  "Hello world !",
+		Action: "New Page",
+		Body:   "Hello world !",
 	})
 	if err != nil {
 		utils.Response(w, r, 500, err.Error())
@@ -126,8 +140,8 @@ func (s *Service) updatePage(w http.ResponseWriter, r *http.Request) {
 	errDB := s.queries.UpdatePage(context.Background(), db.UpdatePageParams{
 		ID: int64(id),
 
-		TitleDoUpdate: page.Title != "",
-		Title:         page.Title,
+		ActionDoUpdate: page.Action != "",
+		Action:         page.Action,
 
 		BodyDoUpdate: page.Body != "",
 		Body:         page.Body,

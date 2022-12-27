@@ -10,20 +10,20 @@ import (
 )
 
 const createPage = `-- name: CreatePage :one
-INSERT INTO page (title, body)
+INSERT INTO page (action, body)
 VALUES ($1, $2)
-RETURNING id, title, body
+RETURNING id, action, body
 `
 
 type CreatePageParams struct {
-	Title string
-	Body  string
+	Action string
+	Body   string
 }
 
 func (q *Queries) CreatePage(ctx context.Context, arg CreatePageParams) (Page, error) {
-	row := q.db.QueryRowContext(ctx, createPage, arg.Title, arg.Body)
+	row := q.db.QueryRowContext(ctx, createPage, arg.Action, arg.Body)
 	var i Page
-	err := row.Scan(&i.ID, &i.Title, &i.Body)
+	err := row.Scan(&i.ID, &i.Action, &i.Body)
 	return i, err
 }
 
@@ -38,22 +38,22 @@ func (q *Queries) DeletePage(ctx context.Context, id int64) error {
 }
 
 const getPage = `-- name: GetPage :one
-SELECT id, title, body FROM page
+SELECT id, action, body FROM page
 WHERE id = $1 LIMIT 1
 `
 
 func (q *Queries) GetPage(ctx context.Context, id int64) (Page, error) {
 	row := q.db.QueryRowContext(ctx, getPage, id)
 	var i Page
-	err := row.Scan(&i.ID, &i.Title, &i.Body)
+	err := row.Scan(&i.ID, &i.Action, &i.Body)
 	return i, err
 }
 
 const updatePage = `-- name: UpdatePage :exec
 UPDATE page
 SET
-  title = CASE WHEN $2::boolean
-    THEN $3::VARCHAR(32) ELSE title END,
+  action = CASE WHEN $2::boolean
+    THEN $3::VARCHAR(32) ELSE action END,
 
   body = CASE WHEN $4::boolean
     THEN $5::VARCHAR(4096) ELSE body END
@@ -61,18 +61,18 @@ WHERE id = $1
 `
 
 type UpdatePageParams struct {
-	ID            int64
-	TitleDoUpdate bool
-	Title         string
-	BodyDoUpdate  bool
-	Body          string
+	ID             int64
+	ActionDoUpdate bool
+	Action         string
+	BodyDoUpdate   bool
+	Body           string
 }
 
 func (q *Queries) UpdatePage(ctx context.Context, arg UpdatePageParams) error {
 	_, err := q.db.ExecContext(ctx, updatePage,
 		arg.ID,
-		arg.TitleDoUpdate,
-		arg.Title,
+		arg.ActionDoUpdate,
+		arg.Action,
 		arg.BodyDoUpdate,
 		arg.Body,
 	)

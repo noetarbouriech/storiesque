@@ -2,7 +2,7 @@ CREATE OR REPLACE FUNCTION before_story_insert() RETURNS trigger AS $before_stor
   DECLARE
     page_id int;
   BEGIN
-    INSERT INTO page(title, body)
+    INSERT INTO page(action, body)
     VALUES('Welcome', 'Here it all begins...')
     RETURNING id INTO page_id;
 
