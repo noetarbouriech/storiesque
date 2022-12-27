@@ -45,7 +45,7 @@
         </Label>
         <Button type="submit" class="w-full1">Log In</Button>
         <div class="text-sm font-medium text-gray-500 dark:text-gray-300">
-            Don't have an account? <a href="/signup" class="text-blue-700 hover:underline dark:text-blue-500">Sign up</a>
+            Don't have an account? <a on:click={() => open=false} href="/signup" class="text-blue-700 hover:underline dark:text-blue-500">Sign up</a>
         </div>
     </form>
 </Modal>

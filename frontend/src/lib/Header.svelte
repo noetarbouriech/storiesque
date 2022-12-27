@@ -4,7 +4,7 @@
     import { userStore } from '../store';
 	import LoginModal from './LoginModal.svelte';
 
-	let formModal = false;
+	let formModal: boolean = false;
 
 </script>
 
@@ -42,4 +42,4 @@
     <NavLi href="/user" active={$page.url.pathname.startsWith("/user")}>Users</NavLi>
 </NavUl>
 </Navbar>
-<LoginModal open={formModal} />
+<LoginModal bind:open={formModal} />
