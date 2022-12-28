@@ -125,3 +125,33 @@ func (q *Queries) SearchStories(ctx context.Context, title sql.NullString) ([]Se
 	}
 	return items, nil
 }
+
+const updateStory = `-- name: UpdateStory :exec
+UPDATE story
+SET
+  title = CASE WHEN $2::boolean
+    THEN $3::VARCHAR(48) ELSE title END,
+
+  description = CASE WHEN $4::boolean
+    THEN $5::VARCHAR(512) ELSE description END
+WHERE id = $1
+`
+
+type UpdateStoryParams struct {
+	ID                  int64
+	TitleDoUpdate       bool
+	Title               string
+	DescriptionDoUpdate bool
+	Description         string
+}
+
+func (q *Queries) UpdateStory(ctx context.Context, arg UpdateStoryParams) error {
+	_, err := q.db.ExecContext(ctx, updateStory,
+		arg.ID,
+		arg.TitleDoUpdate,
+		arg.Title,
+		arg.DescriptionDoUpdate,
+		arg.Description,
+	)
+	return err
+}

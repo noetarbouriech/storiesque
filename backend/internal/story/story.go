@@ -61,6 +61,7 @@ func (s *Service) PublicRoutes(r chi.Router) {
 
 func (s *Service) UserRoutes(r chi.Router) {
 	r.Post("/story", s.createStory)        // create a story
+	r.Put("/story/{id}", s.updateStory)    // update a story
 	r.Delete("/story/{id}", s.deleteStory) // delete a story
 
 	r.Post("/page/{id}", s.createPage)   // add a choice to a given page
@@ -155,6 +156,61 @@ func (s *Service) createStory(w http.ResponseWriter, r *http.Request) {
 	}
 
 	utils.Response(w, r, 201, "story successfully created")
+}
+
+func (s *Service) updateStory(w http.ResponseWriter, r *http.Request) {
+
+	// get id in url
+	id, errInt := strconv.Atoi(chi.URLParam(r, "id"))
+	if errInt != nil {
+		utils.Response(w, r, 400, "story id bad format")
+		return
+	}
+
+	// get story from db
+	author, err := s.queries.GetStoryAuthor(context.Background(), int64(id))
+	if err != nil {
+		utils.Response(w, r, 404, "story not found")
+		return
+	}
+
+	// check if user is authorized
+	if !utils.IsOwner(r, int(author)) {
+		utils.Response(w, r, 401, "user is not the owner of the given resource")
+		return
+	}
+
+	// map body to json
+	var story StoryCreation
+	err = json.NewDecoder(r.Body).Decode(&story)
+	if err != nil {
+		utils.Response(w, r, 500, "error while decoding json")
+		return
+	}
+
+	// validate page form
+	err = validate.Struct(story)
+	if err != nil {
+		utils.Response(w, r, 400, "invalid input")
+		return
+	}
+
+	// update db
+	err = s.queries.UpdateStory(context.Background(), db.UpdateStoryParams{
+		ID: int64(id),
+
+		TitleDoUpdate: story.Title != "",
+		Title:         story.Title,
+
+		DescriptionDoUpdate: story.Description != "",
+		Description:         story.Description,
+	})
+	if err != nil {
+		utils.Response(w, r, 404, "story not found")
+		return
+	}
+
+	utils.Response(w, r, 200, "story successfully updated")
 }
 
 func (s *Service) deleteStory(w http.ResponseWriter, r *http.Request) {

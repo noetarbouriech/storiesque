@@ -18,6 +18,16 @@ INSERT INTO story (title, description, author)
 VALUES ($1, $2, $3)
 RETURNING *;
 
+-- name: UpdateStory :exec
+UPDATE story
+SET
+  title = CASE WHEN @title_do_update::boolean
+    THEN @title::VARCHAR(48) ELSE title END,
+
+  description = CASE WHEN @description_do_update::boolean
+    THEN @description::VARCHAR(512) ELSE description END
+WHERE id = $1;
+
 -- name: DeleteStory :exec
 DELETE FROM story
 WHERE id = $1;
