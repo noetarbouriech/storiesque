@@ -10,7 +10,9 @@
 
     async function logout() {
         try {
-            const response = await fetch(`${env.PUBLIC_API_URL}/logout`);
+            const response = await fetch(`${env.PUBLIC_API_URL}/logout`, {
+                credentials: 'include',
+            });
             if (response.ok) { 
                 $userStore = {
                     username: "",

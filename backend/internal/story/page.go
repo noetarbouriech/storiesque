@@ -25,7 +25,7 @@ type Page struct {
 	Author  int64         `json:"author_id"`
 	Action  string        `json:"action"             validate:"gte=0,lte=64"`
 	Body    string        `json:"body"              validate:"gte=0,lte=4096"`
-	Choices []PageChoices `json:"choices,omitempty"`
+	Choices []PageChoices `json:"choices"`
 }
 
 func (s *Service) getPage(w http.ResponseWriter, r *http.Request) {
@@ -98,7 +98,7 @@ func (s *Service) createPage(w http.ResponseWriter, r *http.Request) {
 
 	// create page in db
 	page, err := s.queries.CreatePage(context.Background(), db.CreatePageParams{
-		Action: "New Page",
+		Action: "New choice",
 		Author: int64(claims["id"].(float64)),
 		Body:   "Hello world !",
 	})
@@ -119,7 +119,11 @@ func (s *Service) createPage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	utils.Response(w, r, 201, "page successfully created")
+	// print json of the choice added
+	render.JSON(w, r, PageChoices{
+		Action: page.Action,
+		Id:     page.ID,
+	})
 }
 
 func (s *Service) updatePage(w http.ResponseWriter, r *http.Request) {

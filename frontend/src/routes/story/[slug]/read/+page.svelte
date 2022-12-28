@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount } from "svelte";
     import { env } from '$env/dynamic/public';
+    import { userStore } from '../../../../store';
     import { Toast, P, A, Hr, Button, Popover, TextPlaceholder, Spinner, Span } from 'flowbite-svelte'
     import type { PageData } from './$types';
     import { BookOpen, InformationCircle, Plus } from 'svelte-heros-v2';
@@ -27,14 +28,19 @@
     async function changePage(pageId: Number): Promise<void> {
         loading = true;
         setTimeout(async () => {
-        currPage = await fetch(`${env.PUBLIC_API_URL}/page/${pageId}`)
+        currPage = await fetch(`${env.PUBLIC_API_URL}/page/${pageId}`, {
+            credentials: 'include',
+        })
         .then(r => r.json());
         loading = false;
         }, 300)
     }
 
     async function addChoice(): Promise<void> {
-        currPage.choices.push(await fetch(`${env.PUBLIC_API_URL}/page/${currPage.id}`, { method: 'POST' }));
+        currPage.choices = [...currPage.choices,(await (await fetch(`${env.PUBLIC_API_URL}/page/${currPage.id}`, { 
+            method: 'POST',
+            credentials: 'include',
+        })).json())];
     }
 
     onMount(async (): Promise<void> => {
@@ -83,9 +89,11 @@
             <Button on:click={() => changePage(choice.page_id)} class="mb-2 break-all">{choice.action}</Button>
             {/each}
         {/if}
-        <Button on:click={addChoice} class="break-all" outline>
-            <Plus/>
-            Add a choice
-        </Button>
+        {#if data.story.author_name == $userStore.username}
+            <Button on:click={addChoice} class="break-all" outline>
+                <Plus/>
+                Add a choice
+            </Button>
+        {/if}
     </div>
 {/if}
