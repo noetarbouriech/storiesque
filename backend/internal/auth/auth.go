@@ -45,6 +45,7 @@ type Credentials struct {
 
 func (s *Service) PublicRoutes(r chi.Router) {
 	r.Post("/login", s.login)
+	r.Get("/logout", s.logout)
 	r.Post("/signup", s.signUp)
 }
 
@@ -73,10 +74,11 @@ func (s *Service) login(w http.ResponseWriter, r *http.Request) {
 	// create token
 	expireTime := time.Now().Add(15 * time.Minute)
 	_, tokenString, err := s.tokenAuth.Encode(map[string]interface{}{
-		"name": userDB.Username,   // username
-		"id":   userDB.ID,         // user id
-		"iat":  time.Now(),        // issued time
-		"exp":  expireTime.Unix(), // expire time
+		"name":  userDB.Username,   // username
+		"id":    userDB.ID,         // user id
+		"admin": userDB.IsAdmin,    // user is_admin
+		"iat":   time.Now(),        // issued time
+		"exp":   expireTime.Unix(), // expire time
 	})
 	if err != nil {
 		utils.Response(w, r, 500, "error with token creation")
@@ -105,6 +107,27 @@ func (s *Service) login(w http.ResponseWriter, r *http.Request) {
 		Email:    userDB.Email,
 		IsAdmin:  userDB.IsAdmin,
 	})
+}
+
+func (s *Service) logout(w http.ResponseWriter, r *http.Request) {
+
+	// put expired cookie in client
+	http.SetCookie(w, &http.Cookie{
+		Name:       "jwt",
+		Value:      "",
+		Path:       "",
+		Domain:     s.apiDomain,
+		Expires:    time.Unix(0, 0),
+		RawExpires: "",
+		MaxAge:     10000,
+		Secure:     true,
+		HttpOnly:   true,
+		SameSite:   http.SameSiteStrictMode,
+		Raw:        "",
+		Unparsed:   []string{},
+	})
+
+	utils.Response(w, r, 200, "successfully logged out")
 }
 
 func (s *Service) signUp(w http.ResponseWriter, r *http.Request) {

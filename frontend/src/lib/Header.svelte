@@ -2,10 +2,28 @@
     import { Button, Navbar, NavBrand, NavLi, NavUl, NavHamburger, Avatar, Dropdown, DropdownItem, DropdownHeader, DropdownDivider, DarkMode } from 'flowbite-svelte'
     import { page } from '$app/stores';
     import { userStore } from '../store';
+    import { env } from '$env/dynamic/public';
 	import LoginModal from './LoginModal.svelte';
+	import { goto } from '$app/navigation';
 
 	let formModal: boolean = false;
 
+    async function logout() {
+        try {
+            const response = await fetch(`${env.PUBLIC_API_URL}/logout`);
+            if (response.ok) { 
+                $userStore = {
+                    username: "",
+                    email: ""
+                };
+                goto("/");
+            } else {
+                alert(response.json());
+            }
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    }
 </script>
 
 <Navbar let:hidden let:toggle>
@@ -33,7 +51,7 @@
     <DropdownItem href="/user/{$userStore.username}">My Profile</DropdownItem>
     <DropdownItem href="/library">My Library</DropdownItem>
     <DropdownDivider />
-    <DropdownItem>Sign out</DropdownItem>
+    <DropdownItem on:click={logout}>Sign out</DropdownItem>
 </Dropdown>
 {/if}
 <NavUl {hidden}>
