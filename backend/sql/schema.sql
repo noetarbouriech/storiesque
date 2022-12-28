@@ -10,6 +10,7 @@ CREATE TABLE "user"
 CREATE TABLE page
 (
   id BIGSERIAL PRIMARY KEY,
+  author BIGINT NOT NULL REFERENCES "user"(id),
   action VARCHAR(64) NOT NULL,
   body VARCHAR(4096) NOT NULL
 );
@@ -19,7 +20,7 @@ CREATE TABLE story
   id BIGSERIAL PRIMARY KEY,
   title VARCHAR(48) NOT NULL,
   description VARCHAR(512),
-  author BIGINT NOT NULL REFERENCES "user",
+  author BIGINT NOT NULL REFERENCES "user"(id),
   first_page_id BIGINT REFERENCES page(id)
 );
 

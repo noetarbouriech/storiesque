@@ -9,6 +9,7 @@ import (
 	"strconv"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/jwtauth/v5"
 	"github.com/go-chi/render"
 	"github.com/noetarbouriech/storiesque/backend/internal/db"
 	"github.com/noetarbouriech/storiesque/backend/internal/utils"
@@ -21,12 +22,14 @@ type PageChoices struct {
 
 type Page struct {
 	Id      int64         `json:"id"`
+	Author  int64         `json:"author_id"`
 	Action  string        `json:"action"             validate:"gte=0,lte=64"`
 	Body    string        `json:"body"              validate:"gte=0,lte=4096"`
 	Choices []PageChoices `json:"choices,omitempty"`
 }
 
 func (s *Service) getPage(w http.ResponseWriter, r *http.Request) {
+
 	// get id in param
 	id, errInt := strconv.Atoi(chi.URLParam(r, "id"))
 	if errInt != nil {
@@ -57,16 +60,18 @@ func (s *Service) getPage(w http.ResponseWriter, r *http.Request) {
 		})
 	}
 
-	pageJson := Page{
+	// render page in json
+	render.JSON(w, r, Page{
 		Id:      page.ID,
+		Author:  page.Author,
 		Action:  page.Action,
 		Body:    page.Body,
 		Choices: choicesStruct,
-	}
-	render.JSON(w, r, pageJson)
+	})
 }
 
 func (s *Service) createPage(w http.ResponseWriter, r *http.Request) {
+
 	// get id in param
 	id, errInt := strconv.Atoi(chi.URLParam(r, "id"))
 	if errInt != nil {
@@ -75,15 +80,26 @@ func (s *Service) createPage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// check if page in param exists
-	exists, _ := s.queries.GetPage(context.Background(), int64(id))
-	if exists.ID == 0 {
+	parentPage, _ := s.queries.GetPage(context.Background(), int64(id))
+	if parentPage.ID == 0 {
 		utils.Response(w, r, 404, fmt.Sprintf("page with id %d doesn't exist", id))
 		return
 	}
 
+	// check if user is authorized
+	if !utils.IsOwner(r, int(parentPage.Author)) {
+		utils.Response(w, r, 401, "user is not the owner of the given resource")
+		return
+	}
+
+	// get infos from jwt
+	// cannot be error since the jwt is verified for userRouters
+	_, claims, _ := jwtauth.FromContext(r.Context())
+
 	// create page in db
 	page, err := s.queries.CreatePage(context.Background(), db.CreatePageParams{
 		Action: "New Page",
+		Author: int64(claims["id"].(float64)),
 		Body:   "Hello world !",
 	})
 	if err != nil {
@@ -107,18 +123,32 @@ func (s *Service) createPage(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Service) updatePage(w http.ResponseWriter, r *http.Request) {
-	// map body to json
-	var page Page
-	err := json.NewDecoder(r.Body).Decode(&page)
-	if err != nil {
-		utils.Response(w, r, 500, "error while decoding json")
-		return
-	}
 
 	// get id in param
 	id, err := strconv.Atoi(chi.URLParam(r, "id"))
 	if err != nil {
 		utils.Response(w, r, 400, "impossible to parse page id")
+		return
+	}
+
+	// check if page in param exists
+	parentPage, _ := s.queries.GetPage(context.Background(), int64(id))
+	if parentPage.ID == 0 {
+		utils.Response(w, r, 404, fmt.Sprintf("page with id %d doesn't exist", id))
+		return
+	}
+
+	// check if user is authorized
+	if !utils.IsOwner(r, int(parentPage.Author)) {
+		utils.Response(w, r, 401, "user is not the owner of the given resource")
+		return
+	}
+
+	// map body to json
+	var page Page
+	err = json.NewDecoder(r.Body).Decode(&page)
+	if err != nil {
+		utils.Response(w, r, 500, "error while decoding json")
 		return
 	}
 
@@ -129,15 +159,8 @@ func (s *Service) updatePage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// check if page in param exists
-	exists, _ := s.queries.GetPage(context.Background(), int64(id))
-	if exists.ID == 0 {
-		utils.Response(w, r, 404, fmt.Sprintf("page with id %d doesn't exist", id))
-		return
-	}
-
 	// update db
-	errDB := s.queries.UpdatePage(context.Background(), db.UpdatePageParams{
+	err = s.queries.UpdatePage(context.Background(), db.UpdatePageParams{
 		ID: int64(id),
 
 		ActionDoUpdate: page.Action != "",
@@ -146,7 +169,7 @@ func (s *Service) updatePage(w http.ResponseWriter, r *http.Request) {
 		BodyDoUpdate: page.Body != "",
 		Body:         page.Body,
 	})
-	if errDB != nil {
+	if err != nil {
 		utils.Response(w, r, 404, "page not found")
 		return
 	}
@@ -155,7 +178,8 @@ func (s *Service) updatePage(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Service) deletePage(w http.ResponseWriter, r *http.Request) {
-	// get id
+
+	// get id in param
 	id, err := strconv.Atoi(chi.URLParam(r, "id"))
 	if err != nil {
 		utils.Response(w, r, 400, "page id bad format")
@@ -163,10 +187,15 @@ func (s *Service) deletePage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// check if page in param exists
-	exists, _ := s.queries.GetPage(context.Background(), int64(id))
-	fmt.Println(exists)
-	if exists.ID == 0 {
+	parentPage, _ := s.queries.GetPage(context.Background(), int64(id))
+	if parentPage.ID == 0 {
 		utils.Response(w, r, 404, fmt.Sprintf("page with id %d doesn't exist", id))
+		return
+	}
+
+	// check if user is authorized
+	if !utils.IsOwner(r, int(parentPage.Author)) {
+		utils.Response(w, r, 401, "user is not the owner of the given resource")
 		return
 	}
 

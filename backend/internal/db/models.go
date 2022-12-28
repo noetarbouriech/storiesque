@@ -15,6 +15,7 @@ type Choice struct {
 
 type Page struct {
 	ID     int64
+	Author int64
 	Action string
 	Body   string
 }

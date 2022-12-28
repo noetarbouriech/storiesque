@@ -11,6 +11,7 @@ import (
 	"github.com/go-chi/render"
 	"github.com/go-playground/validator/v10"
 	"github.com/noetarbouriech/storiesque/backend/internal/db"
+	"github.com/noetarbouriech/storiesque/backend/internal/story"
 	"github.com/noetarbouriech/storiesque/backend/internal/utils"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -37,18 +38,11 @@ type User struct {
 }
 
 type UserDetails struct {
-	Id       int64       `json:"id"`
-	Username string      `json:"username"`
-	Email    string      `json:"email"`
-	IsAdmin  bool        `json:"is_admin"`
-	Stories  []StoryCard `json:"stories"`
-}
-
-type StoryCard struct {
-	Id          int64  `json:"id"`
-	Title       string `json:"title"`
-	Description string `json:"description"`
-	AuthorName  string `json:"author_name"`
+	Id       int64             `json:"id"`
+	Username string            `json:"username"`
+	Email    string            `json:"email"`
+	IsAdmin  bool              `json:"is_admin"`
+	Stories  []story.StoryCard `json:"stories"`
 }
 
 // use a single instance of Validate, it caches struct info
@@ -70,11 +64,15 @@ func (s *Service) UserRoutes(r chi.Router) {
 }
 
 func (s *Service) getUsers(w http.ResponseWriter, r *http.Request) {
+
+	// get list of users from db
 	users, err := s.queries.ListUsers(context.Background())
 	if err != nil {
 		utils.Response(w, r, 404, "user not found")
 		return
 	}
+
+	// map list to json
 	rUsers := []User{}
 	for _, user := range users {
 		rUser := User{
@@ -85,10 +83,12 @@ func (s *Service) getUsers(w http.ResponseWriter, r *http.Request) {
 		}
 		rUsers = append(rUsers, rUser)
 	}
+
 	render.JSON(w, r, rUsers)
 }
 
 func (s *Service) getUser(w http.ResponseWriter, r *http.Request) {
+
 	// get username in uri
 	user, err := s.queries.GetUserDetails(
 		context.Background(),
@@ -100,10 +100,10 @@ func (s *Service) getUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// list stories written by given user
-	stories := []StoryCard{}
+	stories := []story.StoryCard{}
 	if user[0].StoryID.Valid {
 		for _, line := range user {
-			story := StoryCard{
+			story := story.StoryCard{
 				Id:          line.StoryID.Int64,
 				Title:       line.Title.String,
 				Description: line.Description.String,
@@ -163,6 +163,20 @@ func (s *Service) createUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Service) updateUser(w http.ResponseWriter, r *http.Request) {
+
+	// get id in param
+	id, errInt := strconv.Atoi(chi.URLParam(r, "id"))
+	if errInt != nil {
+		utils.Response(w, r, 400, "impossible to parse user id")
+		return
+	}
+
+	// check if user is authorized
+	if !utils.IsOwner(r, id) {
+		utils.Response(w, r, 401, "user is not the owner of the given resource")
+		return
+	}
+
 	// map body to json
 	var user UserCreation
 	errJson := json.NewDecoder(r.Body).Decode(&user)
@@ -175,13 +189,6 @@ func (s *Service) updateUser(w http.ResponseWriter, r *http.Request) {
 	hashedPassword, errPassword := bcrypt.GenerateFromPassword([]byte(user.Password), 8)
 	if errPassword != nil {
 		utils.Response(w, r, 500, "error while hashing password")
-		return
-	}
-
-	// get id in param
-	id, errInt := strconv.Atoi(chi.URLParam(r, "id"))
-	if errInt != nil {
-		utils.Response(w, r, 400, "impossible to parse user id")
 		return
 	}
 
@@ -207,15 +214,26 @@ func (s *Service) updateUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Service) deleteUser(w http.ResponseWriter, r *http.Request) {
+
+	// get id in param
 	id, errInt := strconv.Atoi(chi.URLParam(r, "id"))
 	if errInt != nil {
 		utils.Response(w, r, 400, "impossible to parse user id")
 		return
 	}
+
+	// check if user is authorized
+	if !utils.IsOwner(r, id) {
+		utils.Response(w, r, 401, "user is not the owner of the given resource")
+		return
+	}
+
+	// delete user in db
 	errDB := s.queries.DeleteUser(context.Background(), int64(id))
 	if errDB != nil {
 		utils.Response(w, r, 404, "user not found")
 		return
 	}
+
 	utils.Response(w, r, 200, "user successfully deleted")
 }

@@ -2,8 +2,8 @@ CREATE OR REPLACE FUNCTION before_story_insert() RETURNS trigger AS $before_stor
   DECLARE
     page_id int;
   BEGIN
-    INSERT INTO page(action, body)
-    VALUES('Welcome', 'Here it all begins...')
+    INSERT INTO page(action, author, body)
+    VALUES('Welcome', NEW.author, 'Here it all begins...')
     RETURNING id INTO page_id;
 
     NEW.first_page_id := page_id;

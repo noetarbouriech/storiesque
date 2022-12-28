@@ -10,20 +10,26 @@ import (
 )
 
 const createPage = `-- name: CreatePage :one
-INSERT INTO page (action, body)
-VALUES ($1, $2)
-RETURNING id, action, body
+INSERT INTO page (action, author, body)
+VALUES ($1, $2, $3)
+RETURNING id, author, action, body
 `
 
 type CreatePageParams struct {
 	Action string
+	Author int64
 	Body   string
 }
 
 func (q *Queries) CreatePage(ctx context.Context, arg CreatePageParams) (Page, error) {
-	row := q.db.QueryRowContext(ctx, createPage, arg.Action, arg.Body)
+	row := q.db.QueryRowContext(ctx, createPage, arg.Action, arg.Author, arg.Body)
 	var i Page
-	err := row.Scan(&i.ID, &i.Action, &i.Body)
+	err := row.Scan(
+		&i.ID,
+		&i.Author,
+		&i.Action,
+		&i.Body,
+	)
 	return i, err
 }
 
@@ -38,14 +44,19 @@ func (q *Queries) DeletePage(ctx context.Context, id int64) error {
 }
 
 const getPage = `-- name: GetPage :one
-SELECT id, action, body FROM page
+SELECT id, author, action, body FROM page
 WHERE id = $1 LIMIT 1
 `
 
 func (q *Queries) GetPage(ctx context.Context, id int64) (Page, error) {
 	row := q.db.QueryRowContext(ctx, getPage, id)
 	var i Page
-	err := row.Scan(&i.ID, &i.Action, &i.Body)
+	err := row.Scan(
+		&i.ID,
+		&i.Author,
+		&i.Action,
+		&i.Body,
+	)
 	return i, err
 }
 

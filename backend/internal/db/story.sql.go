@@ -72,6 +72,18 @@ func (q *Queries) GetStory(ctx context.Context, id int64) (GetStoryRow, error) {
 	return i, err
 }
 
+const getStoryAuthor = `-- name: GetStoryAuthor :one
+SELECT author FROM story
+WHERE id = $1 LIMIT 1
+`
+
+func (q *Queries) GetStoryAuthor(ctx context.Context, id int64) (int64, error) {
+	row := q.db.QueryRowContext(ctx, getStoryAuthor, id)
+	var author int64
+	err := row.Scan(&author)
+	return author, err
+}
+
 const searchStories = `-- name: SearchStories :many
 SELECT s.id, s.title, s.description, u.username as author_name FROM story s
 JOIN "user" u ON s.author = u.id

@@ -78,6 +78,7 @@ func (s *Service) getStories(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// map stories to json struct
 	rStories := []StoryCard{}
 	for _, story := range stories {
 		rStory := StoryCard{
@@ -93,6 +94,7 @@ func (s *Service) getStories(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Service) getStory(w http.ResponseWriter, r *http.Request) {
+
 	// get id in url
 	id, errInt := strconv.Atoi(chi.URLParam(r, "id"))
 	if errInt != nil {
@@ -156,15 +158,33 @@ func (s *Service) createStory(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Service) deleteStory(w http.ResponseWriter, r *http.Request) {
+
+	// get id in url
 	id, errInt := strconv.Atoi(chi.URLParam(r, "id"))
 	if errInt != nil {
 		utils.Response(w, r, 400, "story id bad format")
 		return
 	}
+
+	// get story from db
+	author, err := s.queries.GetStoryAuthor(context.Background(), int64(id))
+	if err != nil {
+		utils.Response(w, r, 404, "story not found")
+		return
+	}
+
+	// check if user is authorized
+	if !utils.IsOwner(r, int(author)) {
+		utils.Response(w, r, 401, "user is not the owner of the given resource")
+		return
+	}
+
+	// delete story in db
 	errDB := s.queries.DeleteStory(context.Background(), int64(id))
 	if errDB != nil {
 		utils.Response(w, r, 404, "story not found")
 		return
 	}
+
 	utils.Response(w, r, 200, "story successfully deleted")
 }

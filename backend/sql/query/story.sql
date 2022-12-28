@@ -3,6 +3,10 @@ SELECT s.id, s.title, s.description, s.first_page_id, u.username as author_name 
 JOIN "user" u ON s.author = u.id
 WHERE s.id = $1 LIMIT 1;
 
+-- name: GetStoryAuthor :one
+SELECT author FROM story
+WHERE id = $1 LIMIT 1;
+
 -- name: SearchStories :many
 SELECT s.id, s.title, s.description, u.username as author_name FROM story s
 JOIN "user" u ON s.author = u.id

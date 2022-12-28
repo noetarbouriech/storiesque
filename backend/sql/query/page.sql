@@ -3,8 +3,8 @@ SELECT * FROM page
 WHERE id = $1 LIMIT 1;
 
 -- name: CreatePage :one
-INSERT INTO page (action, body)
-VALUES ($1, $2)
+INSERT INTO page (action, author, body)
+VALUES ($1, $2, $3)
 RETURNING *;
 
 -- name: UpdatePage :exec
