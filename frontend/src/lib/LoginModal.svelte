@@ -5,7 +5,7 @@
 
     export let open: boolean;
 
-    async function login(e: SubmitEvent) {
+    async function login(e: Event): Promise<void> {
         const formData = new FormData(e.target as HTMLFormElement);
         const jsonData = JSON.stringify(Object.fromEntries(formData));
         try {

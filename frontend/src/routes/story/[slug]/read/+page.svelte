@@ -2,18 +2,19 @@
 	import { onMount } from "svelte";
     import { env } from '$env/dynamic/public';
     import { userStore } from '../../../../store';
-    import { Toast, P, A, Hr, Button, Popover, TextPlaceholder, Spinner, Span } from 'flowbite-svelte'
+    import { Toast, P, A, Hr, Button, Popover, TextPlaceholder, Spinner, Span, Input, Textarea } from 'flowbite-svelte'
     import type { PageData } from './$types';
     import { BookOpen, InformationCircle, Plus } from 'svelte-heros-v2';
     import { page } from '$app/stores';
 	import StoryCard from '$lib/StoryCard.svelte';
+	import EditButton from "$lib/EditButton.svelte";
 
     export let data: PageData;
     type page = {
-        id: Number,
-        action: String,
-        body: String,
-        choices: {page_id: Number, action: String}[]
+        id: number,
+        action: string | number | undefined,
+        body: string,
+        choices: {page_id: number, action: string}[]
     }
 
     // default values
@@ -24,6 +25,7 @@
         choices: []
     };
     let loading: boolean = true;
+    let editMode: boolean;
 
     async function changePage(pageId: Number): Promise<void> {
         loading = true;
@@ -41,6 +43,21 @@
             method: 'POST',
             credentials: 'include',
         })).json())];
+    }
+
+    async function save() {
+        await fetch(`${env.PUBLIC_API_URL}/page/${currPage.id}`, {
+            method: 'PUT',
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                action: currPage.action,
+                body: currPage.body
+            })
+        })
+
     }
 
     onMount(async (): Promise<void> => {
@@ -74,26 +91,46 @@
         </Button>
     </div>
 {:else} 
+    <div class="mx-auto max-w-[1000px]">
     {#if data.story.first_page_id != currPage.id}
-    <P justify class="md:mx-16 lg:mx-32 xl:mx-64 mb-8 md:text-xl" weight="light" size="lg" color="text-gray-500 dark:text-gray-400">
-        <InformationCircle class="inline-flex"/>
-        You chose to:
-        <Span italic class="font-thin">{currPage.action}</Span>
-    </P>
+        <!-- <P justify class="flex flex-wrap items-center w-full mb-8 md:text-xl" weight="light" size="lg" color="text-gray-500 dark:text-gray-400"> -->
+        <P justify class="flex flex-wrap items-center w-full mb-8 md:text-xl" weight="light" size="lg" color="text-gray-500 dark:text-gray-400">
+            <div class="mr-2 inline-flex items-center whitespace-nowrap">
+            <InformationCircle />
+            You chose to:
+            </div>
+            {#if editMode}
+                <Input class="flex-1 min-w-fit" type="text" anme="action" id="action" bind:value={currPage.action} required />
+            {:else}
+                <Span italic class="ml-2 font-thin break-all">{currPage.action}</Span>
+            {/if}
+        </P>
     {/if}
-    <P firstupper justify class="md:mx-16 lg:mx-32 xl:mx-64">{currPage.body}</P>
+    {#if editMode}
+        <Textarea class="flex justify-center mx-auto max-w-[1000px]" id="body" name="body" rows=15 bind:value={currPage.body} required />
+    {:else}
+        <P firstupper justify>{currPage.body}</P>
+    {/if}
+    </div>
     <Hr class="my-4 mx-auto md:my-8" width="w-48" height="h-1" />
     <div class="mx-auto flex flex-col justify-center max-w-fit">
-        {#if currPage.choices}
+        {#if currPage.choices.length == 0 && !editMode}
+            <P class="md:text-xl" weight="light" size="lg" color="text-gray-500 dark:text-gray-400">
+                You have reached an ending of this story. Thank you for playing !
+            </P>
+        {:else}
             {#each currPage.choices as choice}
             <Button on:click={() => changePage(choice.page_id)} class="mb-2 break-all">{choice.action}</Button>
             {/each}
         {/if}
-        {#if data.story.author_name == $userStore.username}
+        {#if editMode}
             <Button on:click={addChoice} class="break-all" outline>
                 <Plus/>
                 Add a choice
             </Button>
         {/if}
     </div>
+    {#if data.story.author_name == $userStore.username}
+        <EditButton bind:editMode={editMode} on:save={save}/>
+    {/if}
 {/if}
