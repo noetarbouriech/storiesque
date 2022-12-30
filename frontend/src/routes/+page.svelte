@@ -1,7 +1,11 @@
-<script>
+<script lang="ts">
 import StoryCard from '$lib/StoryCard.svelte';
+import StoryModal from '$lib/StoryModal.svelte';
 import { Hr, A, Heading, P, Span, Button } from 'flowbite-svelte'
 import { PencilSquare } from 'svelte-heros-v2'
+
+let storyModal: boolean = false;
+
 </script>
 
 <Heading align="center" tag="h1" class="mt-8 mb-4" customSize="text-3xl font-extrabold  md:text-5xl lg:text-6xl">Why just read when you can <Span gradient>play</Span>?</Heading>
@@ -10,7 +14,7 @@ import { PencilSquare } from 'svelte-heros-v2'
 </P>
 
 <div class="flex justify-center py-8 gap-x-4">
-    <Button gradient color="greenToBlue" class="font-extrabold bg-gradient-to-r to-emerald-600 from-sky-400">
+    <Button on:click={() => storyModal = true} gradient color="greenToBlue" class="font-extrabold bg-gradient-to-r to-emerald-600 from-sky-400">
         <PencilSquare/>Write your story
     </Button>
     <Button color="alternative" href="/story">Read a story</Button>
@@ -49,3 +53,5 @@ import { PencilSquare } from 'svelte-heros-v2'
         <svg aria-hidden="true" class="ml-2 w-6 h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
     </A>
 </div>
+
+<StoryModal bind:open={storyModal} />

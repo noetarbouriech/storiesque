@@ -145,7 +145,7 @@ func (s *Service) createStory(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// create story in db
-	_, err = s.queries.CreateStory(context.Background(), db.CreateStoryParams{
+	storyDB, err := s.queries.CreateStory(context.Background(), db.CreateStoryParams{
 		Title:       story.Title,
 		Description: sql.NullString{String: story.Description, Valid: true},
 		Author:      int64(claims["id"].(float64)),
@@ -155,7 +155,13 @@ func (s *Service) createStory(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	utils.Response(w, r, 201, "story successfully created")
+	// render story created in db
+	render.JSON(w, r, StoryCreation{
+		Id:          storyDB.ID,
+		Title:       storyDB.Title,
+		Description: storyDB.Description.String,
+		AuthorId:    storyDB.Author,
+	})
 }
 
 func (s *Service) updateStory(w http.ResponseWriter, r *http.Request) {
