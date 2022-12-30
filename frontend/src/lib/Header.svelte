@@ -16,7 +16,8 @@
             if (response.ok) { 
                 $userStore = {
                     username: "",
-                    email: ""
+                    email: "",
+                    is_admin: false,
                 };
                 goto("/");
             } else {

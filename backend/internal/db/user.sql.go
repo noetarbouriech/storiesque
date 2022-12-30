@@ -164,6 +164,17 @@ func (q *Queries) ListUsers(ctx context.Context) ([]User, error) {
 	return items, nil
 }
 
+const setAdmin = `-- name: SetAdmin :exec
+UPDATE "user"
+SET is_admin = NOT is_admin
+WHERE id = $1
+`
+
+func (q *Queries) SetAdmin(ctx context.Context, id int64) error {
+	_, err := q.db.ExecContext(ctx, setAdmin, id)
+	return err
+}
+
 const updateUser = `-- name: UpdateUser :exec
 UPDATE "user"
 SET

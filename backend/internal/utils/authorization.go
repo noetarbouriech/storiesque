@@ -16,3 +16,14 @@ func IsOwner(r *http.Request, id int) bool {
 	// return true if admin or owner
 	return claims["admin"].(bool) || int64(claims["id"].(float64)) == int64(id)
 }
+
+// check if a logged user is admin
+func IsAdmin(r *http.Request) bool {
+
+	// get infos from jwt
+	// cannot be error since the jwt is verified for userRouters
+	_, claims, _ := jwtauth.FromContext(r.Context())
+
+	// return true if admin
+	return claims["admin"].(bool)
+}

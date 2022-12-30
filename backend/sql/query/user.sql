@@ -33,6 +33,11 @@ SET
     THEN @email::VARCHAR(128) ELSE email END
 WHERE id = $1;
 
+-- name: SetAdmin :exec
+UPDATE "user"
+SET is_admin = NOT is_admin
+WHERE id = $1;
+
 -- name: DeleteUser :exec
 DELETE FROM "user"
 WHERE id = $1;

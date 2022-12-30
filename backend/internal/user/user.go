@@ -60,6 +60,7 @@ func (s *Service) PublicRoutes(r chi.Router) {
 func (s *Service) UserRoutes(r chi.Router) {
 	r.Post("/user", s.createUser)
 	r.Put("/user/{id}", s.updateUser)
+	r.Put("/user/{id}/admin", s.setAdmin)
 	r.Delete("/user/{id}", s.deleteUser)
 }
 
@@ -205,6 +206,31 @@ func (s *Service) updateUser(w http.ResponseWriter, r *http.Request) {
 		EmailDoUpdate: user.Email != "",
 		Email:         user.Email,
 	})
+	if errDB != nil {
+		utils.Response(w, r, 404, "user not found")
+		return
+	}
+
+	utils.Response(w, r, 200, "user successfully updated")
+}
+
+func (s *Service) setAdmin(w http.ResponseWriter, r *http.Request) {
+
+	// get id in param
+	id, errInt := strconv.Atoi(chi.URLParam(r, "id"))
+	if errInt != nil {
+		utils.Response(w, r, 400, "impossible to parse user id")
+		return
+	}
+
+	// check if user is authorized
+	if !utils.IsAdmin(r) {
+		utils.Response(w, r, 401, "user is not admin")
+		return
+	}
+
+	// delete user in db
+	errDB := s.queries.SetAdmin(context.Background(), int64(id))
 	if errDB != nil {
 		utils.Response(w, r, 404, "user not found")
 		return

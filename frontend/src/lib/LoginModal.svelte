@@ -21,7 +21,8 @@
             if (response.ok) { 
                 $userStore = {
                     username: data.username,
-                    email: data.email
+                    email: data.email,
+                    is_admin: data.is_admin,
                 };
                 open = false;
             } else {
