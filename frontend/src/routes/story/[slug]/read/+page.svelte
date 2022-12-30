@@ -109,7 +109,7 @@
                     <InformationCircle />You chose to:
                 </div>
                 {#if editMode}
-                    <Input class="flex-1 min-w-fit" type="text" anme="action" id="action" bind:value={currPage.action} required />
+                    <Input class="flex-1 min-w-fit" type="text" name="action" id="action" bind:value={currPage.action} required />
                 {:else}
                     <Span italic class="font-thin break-all">{currPage.action}</Span>
                 {/if}
