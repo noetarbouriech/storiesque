@@ -4,7 +4,7 @@
     import { userStore } from '../../../../store';
     import { Toast, P, A, Hr, Button, Popover, TextPlaceholder, Spinner, Span, Input, Textarea } from 'flowbite-svelte'
     import type { PageData } from './$types';
-    import { BookOpen, InformationCircle, Plus } from 'svelte-heros-v2';
+    import { ArrowUturnLeft, BookOpen, InformationCircle, Plus } from 'svelte-heros-v2';
     import { page } from '$app/stores';
 	import StoryCard from '$lib/StoryCard.svelte';
 	import EditButton from "$lib/EditButton.svelte";
@@ -26,8 +26,9 @@
     };
     let loading: boolean = true;
     let editMode: boolean;
+    let history: Array<number> = [];
 
-    async function changePage(pageId: Number): Promise<void> {
+    async function changePage(pageId: number): Promise<void> {
         loading = true;
         setTimeout(async () => {
         currPage = await fetch(`${env.PUBLIC_API_URL}/page/${pageId}`, {
@@ -35,7 +36,16 @@
         })
         .then(r => r.json());
         loading = false;
+        // add current page to history if its not already in history (like when going backward)
+        // https://svelte.dev/tutorial/updating-arrays-and-objects
+        if (history[history.length-1] != currPage.id) history = [...history, currPage.id];
         }, 300)
+    }
+
+    async function back(): Promise<void> {
+        // remove last page from history and change to the page before this one
+        history = history.slice(0, -1);
+        changePage(history[history.length-1]);
     }
 
     async function addChoice(): Promise<void> {
@@ -92,29 +102,28 @@
     </div>
 {:else} 
     <div class="mx-auto max-w-[1000px]">
-    {#if data.story.first_page_id != currPage.id}
-        <!-- <P justify class="flex flex-wrap items-center w-full mb-8 md:text-xl" weight="light" size="lg" color="text-gray-500 dark:text-gray-400"> -->
-        <P justify class="flex flex-wrap items-center w-full mb-8 md:text-xl" weight="light" size="lg" color="text-gray-500 dark:text-gray-400">
-            <div class="mr-2 inline-flex items-center whitespace-nowrap">
-            <InformationCircle />
-            You chose to:
-            </div>
-            {#if editMode}
-                <Input class="flex-1 min-w-fit" type="text" anme="action" id="action" bind:value={currPage.action} required />
-            {:else}
-                <Span italic class="ml-2 font-thin break-all">{currPage.action}</Span>
-            {/if}
-        </P>
-    {/if}
-    {#if editMode}
-        <Textarea class="flex justify-center mx-auto max-w-[1000px]" id="body" name="body" rows=15 bind:value={currPage.body} required />
-    {:else}
-        <P firstupper justify>{currPage.body}</P>
-    {/if}
+        {#if data.story.first_page_id != currPage.id}
+            <A on:click={back} class="mb-4 font-medium hover:underline"><ArrowUturnLeft /> Go back to the previous page</A>
+            <P justify class="flex flex-wrap items-center w-full mb-8 md:text-xl" weight="light" size="lg" color="text-gray-500 dark:text-gray-400">
+                <div class="mr-2 inline-flex items-center whitespace-nowrap">
+                    <InformationCircle />You chose to:
+                </div>
+                {#if editMode}
+                    <Input class="flex-1 min-w-fit" type="text" anme="action" id="action" bind:value={currPage.action} required />
+                {:else}
+                    <Span italic class="font-thin break-all">{currPage.action}</Span>
+                {/if}
+            </P>
+        {/if}
+        {#if editMode}
+            <Textarea class="flex justify-center mx-auto max-w-[1000px]" id="body" name="body" rows=15 bind:value={currPage.body} required />
+        {:else}
+            <P whitespace="preline" firstupper justify>{currPage.body}</P>
+        {/if}
     </div>
     <Hr class="my-4 mx-auto md:my-8" width="w-48" height="h-1" />
     <div class="mx-auto flex flex-col justify-center max-w-fit">
-        {#if currPage.choices.length == 0 && !editMode}
+        {#if currPage.choices.length === 0 && !editMode}
             <P class="md:text-xl" weight="light" size="lg" color="text-gray-500 dark:text-gray-400">
                 You have reached an ending of this story. Thank you for playing !
             </P>
