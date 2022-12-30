@@ -5,6 +5,7 @@
     import { userStore } from '../../store';
     import { BookOpen, UserCircle } from 'svelte-heros-v2';
     import { onMount } from 'svelte';
+	import StoryTable from '$lib/admin/StoryTable.svelte';
 
     onMount(async() => {
         if (!$userStore.is_admin) goto("/");
@@ -26,6 +27,6 @@
       <BookOpen />
       Stories
     </div>
-    <p class="text-sm text-gray-500 dark:text-gray-400">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+    <StoryTable />
   </TabItem>
 </Tabs>

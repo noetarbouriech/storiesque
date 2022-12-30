@@ -2,7 +2,7 @@
     import { Table, TableHead, TableHeadCell, TableBody, TableBodyRow, TableBodyCell, Button, Toggle, Modal } from 'flowbite-svelte';
 	import { onMount } from 'svelte';
     import { env } from '$env/dynamic/public';
-	import { PencilSquare, Trash } from 'svelte-heros-v2';
+	import { ArrowTopRightOnSquare, PencilSquare, Trash } from 'svelte-heros-v2';
 
     let users: Array<any> = [];
     let popupModal: boolean = false;
@@ -70,6 +70,7 @@
                     <Toggle size="large" on:change={() => updateAdmin(user.id)} checked={user.is_admin} />
                 </TableBodyCell>
                 <TableBodyCell>
+                    <Button href="/user/{user.username}" target="_blank" class="!p-2"><ArrowTopRightOnSquare /></Button>
                     <Button class="!p-2"><PencilSquare /></Button>
                     <Button on:click={() => {popupModal = true; selectedId = user.id}} class="bg-red-600 !p-2"><Trash /></Button>
                 </TableBodyCell>
@@ -77,6 +78,7 @@
         {/each}
     </TableBody>
 </Table>
+
 <Modal bind:open={popupModal} size="xs" autoclose>
   <div class="text-center">
       <svg aria-hidden="true" class="mx-auto mb-4 w-14 h-14 text-gray-400 dark:text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
