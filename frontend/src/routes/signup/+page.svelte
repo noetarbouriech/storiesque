@@ -7,7 +7,7 @@
     let errorMsg: string;
     let checkPass: string;
 
-    async function signUp(e: SubmitEvent) {
+    async function signUp(e: Event): Promise<void> {
         const formData = new FormData(e.target as HTMLFormElement);
         const jsonData = JSON.stringify(Object.fromEntries(formData));
         if (formData.get("password") !== checkPass) {

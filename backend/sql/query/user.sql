@@ -16,9 +16,12 @@ INSERT INTO "user" (username, password_hash, email)
 VALUES ($1, $2, $3)
 RETURNING *;
 
--- name: ListUsers :many
+-- name: SearchUsers :many
 SELECT * FROM "user"
-ORDER BY username;
+WHERE username LIKE '%' || $1 || '%'
+ORDER BY id
+LIMIT 40
+OFFSET 40 * ($2 - 1);
 
 -- name: UpdateUser :exec
 UPDATE "user"

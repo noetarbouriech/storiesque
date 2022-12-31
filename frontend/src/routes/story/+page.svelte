@@ -2,14 +2,24 @@
     import { Heading, PaginationItem } from 'flowbite-svelte'
     import StoryCard from '$lib/StoryCard.svelte';
     import type { PageData } from './$types';
+    import { env } from '$env/dynamic/public';
 
     export let data: PageData;
+    let page: number = 1;
 
-    const previous = () => {
-        alert('Previous btn clicked. Make a call to your server to fetch data.');
+    const previous = async () => {
+        if (page === 1) return;
+        page--;
+        const res = await fetch(`${env.PUBLIC_API_URL}/story?page=${page}`);
+        const stories = await res.json();
+        data = { stories };
     };
-    const next = () => {
-        alert('Next btn clicked. Make a call to your server to fetch data.');
+    const next = async () => {
+        if (data.stories.length < 30) return;
+        page++;
+        const res = await fetch(`${env.PUBLIC_API_URL}/story?page=${page}`);
+        const stories = await res.json();
+        data = { stories };
     };
 </script>
 <Heading class="text-center" tag="h1">📖 Stories</Heading>

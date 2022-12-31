@@ -2,6 +2,7 @@ package user
 
 import (
 	"context"
+	"database/sql"
 	"encoding/json"
 	"log"
 	"net/http"
@@ -66,8 +67,20 @@ func (s *Service) UserRoutes(r chi.Router) {
 
 func (s *Service) getUsers(w http.ResponseWriter, r *http.Request) {
 
+	// get stories with filter by name
+	username := r.URL.Query().Get("username")
+
+	// get page number in query
+	page := r.URL.Query().Get("page")
+	if len(page) == 0 {
+		page = "1"
+	}
+
 	// get list of users from db
-	users, err := s.queries.ListUsers(context.Background())
+	users, err := s.queries.SearchUsers(context.Background(), db.SearchUsersParams{
+		Column1: sql.NullString{String: username, Valid: true},
+		Column2: page,
+	})
 	if err != nil {
 		utils.Response(w, r, 404, "user not found")
 		return

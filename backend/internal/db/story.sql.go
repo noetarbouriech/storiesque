@@ -88,8 +88,15 @@ const searchStories = `-- name: SearchStories :many
 SELECT s.id, s.title, s.description, u.username as author_name FROM story s
 JOIN "user" u ON s.author = u.id
 WHERE title LIKE '%' || $1 || '%'
-ORDER BY title
+ORDER BY s.id
+LIMIT 30
+OFFSET 30 * ($2 - 1)
 `
+
+type SearchStoriesParams struct {
+	Column1 sql.NullString
+	Column2 interface{}
+}
 
 type SearchStoriesRow struct {
 	ID          int64
@@ -98,8 +105,8 @@ type SearchStoriesRow struct {
 	AuthorName  string
 }
 
-func (q *Queries) SearchStories(ctx context.Context, title sql.NullString) ([]SearchStoriesRow, error) {
-	rows, err := q.db.QueryContext(ctx, searchStories, title)
+func (q *Queries) SearchStories(ctx context.Context, arg SearchStoriesParams) ([]SearchStoriesRow, error) {
+	rows, err := q.db.QueryContext(ctx, searchStories, arg.Column1, arg.Column2)
 	if err != nil {
 		return nil, err
 	}

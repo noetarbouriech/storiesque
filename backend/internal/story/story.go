@@ -73,7 +73,17 @@ func (s *Service) getStories(w http.ResponseWriter, r *http.Request) {
 
 	// get stories with filter by name
 	title := r.URL.Query().Get("title")
-	stories, err := s.queries.SearchStories(context.Background(), sql.NullString{String: title, Valid: true})
+
+	// get page number in query
+	page := r.URL.Query().Get("page")
+	if len(page) == 0 {
+		page = "1"
+	}
+
+	stories, err := s.queries.SearchStories(context.Background(), db.SearchStoriesParams{
+		Column1: sql.NullString{String: title, Valid: true},
+		Column2: page,
+	})
 	if err != nil {
 		utils.Response(w, r, 404, "story not found")
 		return

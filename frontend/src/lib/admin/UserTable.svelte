@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { Table, TableHead, TableHeadCell, TableBody, TableBodyRow, TableBodyCell, Button, Toggle, Modal } from 'flowbite-svelte';
+    import { Table, TableHead, TableHeadCell, TableBody, TableBodyRow, TableBodyCell, Button, Toggle, Modal, PaginationItem } from 'flowbite-svelte';
 	import { onMount } from 'svelte';
     import { env } from '$env/dynamic/public';
 	import { ArrowTopRightOnSquare, PencilSquare, Trash } from 'svelte-heros-v2';
@@ -14,6 +14,7 @@
         email: string,
         is_admin: boolean,
     }
+    let page: number = 1;
 
     // default values
     let selectedUser: user = {
@@ -24,15 +25,15 @@
     };
 
     onMount(async () => {
-        loadUsers();
+        loadUsers(1);
     });
 
-    async function loadUsers(): Promise<void> {
-        users = await (await fetch(`${env.PUBLIC_API_URL}/user`)).json();
+    async function loadUsers(page: number): Promise<void> {
+        users = await (await fetch(`${env.PUBLIC_API_URL}/user?page=${page}`)).json();
     }
 
     // get executed every time editModal changes
-    $: if (editModal === false) loadUsers();
+    $: if (editModal === false) loadUsers(page);
 
     async function updateAdmin(userId: number): Promise<void> {
         try {
@@ -60,13 +61,24 @@
             if (!response.ok) { 
                 alert(data.message);
             } else {
-                loadUsers();
+                loadUsers(page);
             }
         } catch (error) {
             console.error('Error:', error);
         }
 
     }
+
+    const previous = async () => {
+        if (page === 1) return;
+        page--;
+        loadUsers(page);
+    };
+    const next = async () => {
+        if (users.length < 30) return;
+        page++;
+        loadUsers(page);
+    };
 
 </script>
 
@@ -101,6 +113,17 @@
         {/each}
     </TableBody>
 </Table>
+
+<div class="mt-4 place-content-center flex space-x-3">
+    <PaginationItem class="flex items-center" on:click={previous}>
+      <svg class="mr-2 w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M7.707 14.707a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l2.293 2.293a1 1 0 010 1.414z" clip-rule="evenodd"/></svg>
+      Prev
+    </PaginationItem>
+    <PaginationItem class="flex items-center" on:click={next}>
+      Next
+      <svg class="ml-2 w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+    </PaginationItem>
+</div>
 
 <Modal bind:open={deleteModal} size="xs" autoclose>
   <div class="text-center">

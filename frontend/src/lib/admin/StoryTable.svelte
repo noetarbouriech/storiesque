@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { Table, TableHead, TableHeadCell, TableBody, TableBodyRow, TableBodyCell, Button, Toggle, Modal } from 'flowbite-svelte';
+    import { Table, TableHead, TableHeadCell, TableBody, TableBodyRow, TableBodyCell, Button, Toggle, Modal, PaginationItem } from 'flowbite-svelte';
 	import { onMount } from 'svelte';
     import { env } from '$env/dynamic/public';
 	import { ArrowTopRightOnSquare, Trash } from 'svelte-heros-v2';
@@ -8,13 +8,14 @@
     let stories: Array<any> = [];
     let popupModal: boolean = false;
     let selectedId: number = 0;
+    let page: number = 1;
 
     onMount(async () => {
-        loadStories();
+        loadStories(1);
     });
 
-    async function loadStories(): Promise<void> {
-        stories = await (await fetch(`${env.PUBLIC_API_URL}/story`)).json();
+    async function loadStories(page: number): Promise<void> {
+        stories = await (await fetch(`${env.PUBLIC_API_URL}/story?page=${page}`)).json();
     }
 
     async function deleteStory(storyId: number): Promise<void> {
@@ -27,12 +28,23 @@
             if (!response.ok) { 
                 alert(data.message);
             } else {
-                loadStories();
+                loadStories(page);
             }
         } catch (error) {
             console.error('Error:', error);
         }
     }
+
+    const previous = async () => {
+        if (page === 1) return;
+        page--;
+        loadStories(page);
+    };
+    const next = async () => {
+        if (stories.length < 30) return;
+        page++;
+        loadStories(page);
+    };
 
 </script>
 
@@ -57,6 +69,17 @@
         {/each}
     </TableBody>
 </Table>
+
+<div class="mt-4 place-content-center flex space-x-3">
+    <PaginationItem class="flex items-center" on:click={previous}>
+      <svg class="mr-2 w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M7.707 14.707a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l2.293 2.293a1 1 0 010 1.414z" clip-rule="evenodd"/></svg>
+      Prev
+    </PaginationItem>
+    <PaginationItem class="flex items-center" on:click={next}>
+      Next
+      <svg class="ml-2 w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+    </PaginationItem>
+</div>
 
 <Modal bind:open={popupModal} size="xs" autoclose>
   <div class="text-center">

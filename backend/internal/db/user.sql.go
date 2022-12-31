@@ -130,13 +130,21 @@ func (q *Queries) GetUserWithUsername(ctx context.Context, username string) (Use
 	return i, err
 }
 
-const listUsers = `-- name: ListUsers :many
+const searchUsers = `-- name: SearchUsers :many
 SELECT id, username, password_hash, is_admin, email FROM "user"
-ORDER BY username
+WHERE username LIKE '%' || $1 || '%'
+ORDER BY id
+LIMIT 40
+OFFSET 40 * ($2 - 1)
 `
 
-func (q *Queries) ListUsers(ctx context.Context) ([]User, error) {
-	rows, err := q.db.QueryContext(ctx, listUsers)
+type SearchUsersParams struct {
+	Column1 sql.NullString
+	Column2 interface{}
+}
+
+func (q *Queries) SearchUsers(ctx context.Context, arg SearchUsersParams) ([]User, error) {
+	rows, err := q.db.QueryContext(ctx, searchUsers, arg.Column1, arg.Column2)
 	if err != nil {
 		return nil, err
 	}

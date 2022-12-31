@@ -1,16 +1,25 @@
 <script lang="ts">
-    let items = ["jean", "test2", "etc", "tet", "´asdfasdf","dsfasddas","sdasdsad"];
     import { Heading, PaginationItem } from 'flowbite-svelte'
     import UserCard from '$lib/UserCard.svelte';
     import type { PageData } from './$types';
+    import { env } from '$env/dynamic/public';
 
     export let data: PageData;
+    let page: number = 1;
 
-    const previous = () => {
-        alert('Previous btn clicked. Make a call to your server to fetch data.');
+    const previous = async () => {
+        if (page === 1) return;
+        page--;
+        const res = await fetch(`${env.PUBLIC_API_URL}/user?page=${page}`);
+        const users = await res.json();
+        data = { users };
     };
-    const next = () => {
-        alert('Next btn clicked. Make a call to your server to fetch data.');
+    const next = async () => {
+        if (data.users.length < 30) return;
+        page++;
+        const res = await fetch(`${env.PUBLIC_API_URL}/user?page=${page}`);
+        const users = await res.json();
+        data = { users };
     };
 </script>
 <Heading class="text-center" tag="h1">👤 Users</Heading>

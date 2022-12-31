@@ -10,8 +10,10 @@ WHERE id = $1 LIMIT 1;
 -- name: SearchStories :many
 SELECT s.id, s.title, s.description, u.username as author_name FROM story s
 JOIN "user" u ON s.author = u.id
-WHERE title LIKE '%' || @title || '%'
-ORDER BY title;
+WHERE title LIKE '%' || $1 || '%'
+ORDER BY s.id
+LIMIT 30
+OFFSET 30 * ($2 - 1);
 
 -- name: CreateStory :one
 INSERT INTO story (title, description, author)
