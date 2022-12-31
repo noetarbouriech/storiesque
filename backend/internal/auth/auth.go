@@ -71,35 +71,21 @@ func (s *Service) login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// create token
-	expireTime := time.Now().Add(15 * time.Minute)
-	_, tokenString, err := s.tokenAuth.Encode(map[string]interface{}{
-		"name":  userDB.Username,   // username
-		"id":    userDB.ID,         // user id
-		"admin": userDB.IsAdmin,    // user is_admin
-		"iat":   time.Now(),        // issued time
-		"exp":   expireTime.Unix(), // expire time
-	})
+	// create access token
+	accessToken, err := s.CreateAccessToken(userDB)
 	if err != nil {
 		utils.Response(w, r, 500, "error with token creation")
 		return
 	}
+	http.SetCookie(w, accessToken)
 
-	// put token in client cookies
-	http.SetCookie(w, &http.Cookie{
-		Name:       "jwt",
-		Value:      tokenString,
-		Path:       "",
-		Domain:     s.apiDomain,
-		Expires:    expireTime,
-		RawExpires: "",
-		MaxAge:     10000,
-		Secure:     true,
-		HttpOnly:   true,
-		SameSite:   http.SameSiteStrictMode,
-		Raw:        "",
-		Unparsed:   []string{},
-	})
+	// create refresh token
+	refreshToken, err := s.CreateRefreshToken()
+	if err != nil {
+		utils.Response(w, r, 500, "error with token creation")
+		return
+	}
+	http.SetCookie(w, refreshToken)
 
 	render.JSON(w, r, user.User{
 		Id:       userDB.ID,
@@ -111,7 +97,7 @@ func (s *Service) login(w http.ResponseWriter, r *http.Request) {
 
 func (s *Service) logout(w http.ResponseWriter, r *http.Request) {
 
-	// put expired cookie in client
+	// replace access token with an expired one
 	http.SetCookie(w, &http.Cookie{
 		Name:       "jwt",
 		Value:      "",
@@ -119,7 +105,23 @@ func (s *Service) logout(w http.ResponseWriter, r *http.Request) {
 		Domain:     s.apiDomain,
 		Expires:    time.Unix(0, 0),
 		RawExpires: "",
-		MaxAge:     10000,
+		MaxAge:     0,
+		Secure:     true,
+		HttpOnly:   true,
+		SameSite:   http.SameSiteStrictMode,
+		Raw:        "",
+		Unparsed:   []string{},
+	})
+
+	// replace refresh token with an expired one
+	http.SetCookie(w, &http.Cookie{
+		Name:       "refresh",
+		Value:      "",
+		Path:       "",
+		Domain:     s.apiDomain,
+		Expires:    time.Unix(0, 0),
+		RawExpires: "",
+		MaxAge:     0,
 		Secure:     true,
 		HttpOnly:   true,
 		SameSite:   http.SameSiteStrictMode,
