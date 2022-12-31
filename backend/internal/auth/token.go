@@ -9,7 +9,7 @@ import (
 
 func (s *Service) CreateAccessToken(userDB db.User) (*http.Cookie, error) {
 
-	expireTime := time.Now().Add(1 * time.Second)
+	expireTime := time.Now().Add(15 * time.Minute)
 	_, tokenString, err := s.tokenAuth.Encode(map[string]interface{}{
 		"name":  userDB.Username,   // username
 		"id":    userDB.ID,         // user id
@@ -39,7 +39,7 @@ func (s *Service) CreateAccessToken(userDB db.User) (*http.Cookie, error) {
 
 func (s *Service) CreateRefreshToken() (*http.Cookie, error) {
 
-	expireTime := time.Now().Add(1 * time.Minute)
+	expireTime := time.Now().Add(3 * time.Hour)
 	_, tokenString, err := s.tokenAuth.Encode(map[string]interface{}{
 		"iat": time.Now(),        // issued time
 		"exp": expireTime.Unix(), // expire time
