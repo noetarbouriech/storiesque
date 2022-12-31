@@ -63,7 +63,7 @@
                 <TableBodyCell>{story.author_name}</TableBodyCell>
                 <TableBodyCell>
                     <Button href="/story/{slugify(story.title,{lower: true})}-{story.id}" target="_blank" class="!p-2"><ArrowTopRightOnSquare /></Button>
-                    <Button on:click={() => {popupModal = true; selectedId = story.id}} class="bg-red-600 !p-2"><Trash /></Button>
+                    <Button on:click={() => {popupModal = true; selectedId = story.id}} class="!bg-red-600 !p-2"><Trash /></Button>
                 </TableBodyCell>
             </TableBodyRow>
         {/each}

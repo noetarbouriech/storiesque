@@ -107,7 +107,7 @@
                         }} class="!p-2">
                         <PencilSquare />
                     </Button>
-                    <Button on:click={() => {deleteModal = true; selectedUser.id = user.id}} class="bg-red-600 !p-2"><Trash /></Button>
+                    <Button on:click={() => {deleteModal = true; selectedUser.id = user.id}} class="!bg-red-600 !p-2"><Trash /></Button>
                 </TableBodyCell>
             </TableBodyRow>
         {/each}

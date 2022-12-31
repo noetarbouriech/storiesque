@@ -139,7 +139,7 @@
             </Button>
         {/if}
     </div>
-    {#if data.story.author_name == $userStore.username}
+    {#if data.story.author_name == $userStore.username || $userStore.is_admin}
         <EditButton bind:editMode={editMode} on:save={save}/>
     {/if}
 {/if}
