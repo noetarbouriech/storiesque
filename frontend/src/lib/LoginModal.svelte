@@ -20,6 +20,7 @@
             const data = await response.json();
             if (response.ok) { 
                 $userStore = {
+                    id: data.id,
                     username: data.username,
                     email: data.email,
                     is_admin: data.is_admin,

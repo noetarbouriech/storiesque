@@ -5,8 +5,10 @@
     import { env } from '$env/dynamic/public';
 	import LoginModal from './LoginModal.svelte';
 	import { goto } from '$app/navigation';
+	import EditUserModal from './EditUserModal.svelte';
 
 	let formModal: boolean = false;
+	let editModal: boolean = false;
 
     async function logout() {
         try {
@@ -15,6 +17,7 @@
             });
             if (response.ok) { 
                 $userStore = {
+                    id: 0,
                     username: "",
                     email: "",
                     is_admin: false,
@@ -54,6 +57,8 @@
     <DropdownItem href="/user/{$userStore.username}">My Profile</DropdownItem>
     <DropdownItem href="/library">My Library</DropdownItem>
     <DropdownDivider />
+    <DropdownItem on:click={() => editModal=true}>Edit Account</DropdownItem>
+    <DropdownDivider />
     <DropdownItem on:click={logout}>Sign out</DropdownItem>
 </Dropdown>
 {/if}
@@ -61,6 +66,16 @@
     <NavLi href="/" active={$page.url.pathname == "/"}>Home</NavLi>
     <NavLi href="/story" active={$page.url.pathname.startsWith("/story")}>Stories</NavLi>
     <NavLi href="/user" active={$page.url.pathname.startsWith("/user")}>Users</NavLi>
+    {#if $userStore.is_admin}
+        <NavLi class="font-black" href="/admin" active={$page.url.pathname.startsWith("/admin")}>Admin</NavLi>
+    {/if}
+
 </NavUl>
 </Navbar>
 <LoginModal bind:open={formModal} />
+<EditUserModal 
+    bind:open={editModal} 
+    id={$userStore.id}
+    username={$userStore.username}
+    email={$userStore.email}
+/>
