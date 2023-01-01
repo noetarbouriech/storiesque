@@ -14,6 +14,7 @@ import (
 	"github.com/noetarbouriech/storiesque/backend/internal/db"
 	"github.com/noetarbouriech/storiesque/backend/internal/user"
 	"github.com/noetarbouriech/storiesque/backend/internal/utils"
+	passwordvalidator "github.com/wagslane/go-password-validator"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -146,6 +147,13 @@ func (s *Service) signUp(w http.ResponseWriter, r *http.Request) {
 	err = validate.Struct(user)
 	if err != nil {
 		utils.Response(w, r, 400, "invalid input")
+		return
+	}
+
+	// check if password is secure enough
+	err = passwordvalidator.Validate(user.Password, 60)
+	if err != nil {
+		utils.Response(w, r, 400, err.Error())
 		return
 	}
 

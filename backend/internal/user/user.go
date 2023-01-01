@@ -26,8 +26,8 @@ func NewService(queries *db.Queries) *Service {
 }
 
 type UserCreation struct {
-	Username string `json:"username" validate:"required,gte=0,lte=24"`
-	Password string `json:"password" validate:"required,gte=0,lte=128"`
+	Username string `json:"username" validate:"required,gte=2,lte=24,alphanum"`
+	Password string `json:"password" validate:"required,gte=4,lte=128"`
 	Email    string `json:"email"    validate:"required,gte=0,lte=128,email"`
 }
 
