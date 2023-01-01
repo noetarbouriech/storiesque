@@ -3,6 +3,8 @@
     import { env } from '$env/dynamic/public';
 	import { goto } from '$app/navigation';
 	import { ExclamationCircle } from 'svelte-heros-v2';
+	import { onMount } from 'svelte';
+    import { userStore } from '../../store';
 
     let errorMsg: string;
     let checkPass: string;
@@ -33,6 +35,10 @@
             console.error('Error:', error);
         }
     }
+
+    onMount(async() => {
+        if ($userStore.username !== "") goto("/");
+    });
 
 </script>
 

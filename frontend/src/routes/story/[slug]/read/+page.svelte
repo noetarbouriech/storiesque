@@ -29,6 +29,9 @@
     let history: Array<number> = [];
 
     async function changePage(pageId: number): Promise<void> {
+        // save current page before changing page
+        if (editMode) save();
+
         loading = true;
         setTimeout(async () => {
         currPage = await fetch(`${env.PUBLIC_API_URL}/page/${pageId}`, {
@@ -43,6 +46,9 @@
     }
 
     async function back(): Promise<void> {
+        // save current page before going back
+        if (editMode) save();
+
         // remove last page from history and change to the page before this one
         history = history.slice(0, -1);
         changePage(history[history.length-1]);
