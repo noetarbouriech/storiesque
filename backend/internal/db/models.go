@@ -20,6 +20,11 @@ type Page struct {
 	Body   string
 }
 
+type Shelf struct {
+	OwnerID int64
+	StoryID int64
+}
+
 type Story struct {
 	ID          int64
 	Title       string

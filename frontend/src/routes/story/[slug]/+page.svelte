@@ -1,11 +1,12 @@
 <script lang="ts">
-    import { Heading, P, Hr, Img, Button, Input, Textarea, Dropzone } from 'flowbite-svelte'
+    import { Heading, P, Hr, Img, Button, Input, Textarea, Dropzone, Tooltip } from 'flowbite-svelte'
     import { env } from '$env/dynamic/public';
     import { userStore } from '../../../store';
     import slugify from 'slugify';
     import type { PageData } from './$types';
     import { Play } from 'svelte-heros-v2'
 	import EditButton from '$lib/EditButton.svelte';
+	import AddToShelf from '$lib/AddToShelf.svelte';
 
     export let data: PageData;
     let editMode: boolean;
@@ -41,10 +42,13 @@
     <P class="mx-auto max-w-xl" align="center" weight="light" color="text-gray-500 dark:text-gray-400">{data.story.description}</P>
 {/if}
 
-<div class="flex justify-center py-8 gap-x-4">
+<div class="flex justify-center items-center py-8 gap-x-4">
     <Button gradient color="greenToBlue" class="w-fit font-extrabold bg-gradient-to-r to-emerald-600 from-sky-400" href="/story/{slugify(data.story.title,{lower: true})}-{data.story.id}/read">
         <Play class="mr-1" variation="solid"/>Begin story
     </Button>
+    {#if $userStore.username !== ""}
+        <AddToShelf storyId={data.story.id} />
+    {/if}
 </div>
 {#if data.story.author_name == $userStore.username || $userStore.is_admin}
     <EditButton bind:editMode={editMode} on:save={save}/>

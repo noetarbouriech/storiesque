@@ -63,6 +63,11 @@ func (s *Service) UserRoutes(r chi.Router) {
 	r.Put("/user/{id}", s.updateUser)
 	r.Put("/user/{id}/admin", s.setAdmin)
 	r.Delete("/user/{id}", s.deleteUser)
+
+	r.Get("/shelf", s.getShelf)
+	r.Get("/shelf/{id}", s.isOnShelf)
+	r.Post("/shelf/{id}", s.addToShelf)
+	r.Delete("/shelf/{id}", s.removeFromShelf)
 }
 
 func (s *Service) getUsers(w http.ResponseWriter, r *http.Request) {

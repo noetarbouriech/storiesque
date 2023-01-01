@@ -16,6 +16,8 @@ BEFORE INSERT ON story
 FOR EACH ROW
 EXECUTE FUNCTION before_story_insert();
 
+---------------------------------------------------------------------------------------------
+
 CREATE OR REPLACE FUNCTION after_story_delete() RETURNS trigger AS $after_story_delete$
   BEGIN
     DELETE FROM page
@@ -28,6 +30,8 @@ CREATE OR REPLACE TRIGGER after_story_delete
 AFTER DELETE ON story
 FOR EACH ROW
 EXECUTE FUNCTION after_story_delete();
+
+---------------------------------------------------------------------------------------------
 
 CREATE OR REPLACE FUNCTION after_choices_delete() RETURNS trigger AS $after_choices_delete$
   BEGIN

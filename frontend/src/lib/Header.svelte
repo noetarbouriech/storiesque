@@ -55,7 +55,7 @@
     <span class="block text-md font-semibold">@{$userStore.username}</span>
     </DropdownHeader>
     <DropdownItem href="/user/{$userStore.username}">My Profile</DropdownItem>
-    <DropdownItem href="/library">My Library</DropdownItem>
+    <DropdownItem href="/shelf">My Shelf</DropdownItem>
     <DropdownDivider />
     <DropdownItem on:click={() => editModal=true}>Edit Account</DropdownItem>
     <DropdownDivider />
