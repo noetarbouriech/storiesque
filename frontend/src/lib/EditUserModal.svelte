@@ -3,6 +3,7 @@
     import { env } from '$env/dynamic/public';
     import { userStore } from '../store';
 	import { User } from 'svelte-heros-v2';
+	import ImageUpload from './ImageUpload.svelte';
 
     export let open: boolean;
 
@@ -10,6 +11,7 @@
     export let username: string;
     export let email: string;
     let password: string = "";
+    let image_url: string = $userStore.has_img ? `${env.PUBLIC_IMG_URL}/user/${$userStore.id}.png?${new Date().getTime()}` : "";
 
     async function editUser(e: Event): Promise<void> {
         const formData = new FormData(e.target as HTMLFormElement);
@@ -46,6 +48,8 @@
 <Modal bind:open={open} size="md" autoclose={false}>
     <form class="flex flex-col space-y-6" on:submit|preventDefault={editUser}>
         <h3 class="inline-flex items-center text-xl font-medium text-gray-900 dark:text-white p-0"><User class="mr-1"/>Edit Account</h3>
+        <span>Profile picture</span>
+        <ImageUpload bind:has_img={$userStore.has_img} id={String(id)} type="user" alt={$userStore.username} default_img="" bind:image_url={image_url} />
         <Label class="space-y-2">
         <span>Username</span>
         <Input type="text" name="username" bind:value={username} required />

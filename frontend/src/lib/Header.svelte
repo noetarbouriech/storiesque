@@ -47,11 +47,13 @@
 {:else}
 <div class="flex items-center md:order-2">
     <DarkMode />
-    {#if $userStore.has_img}
-        <Avatar src="{env.PUBLIC_IMG_URL}/user/{$userStore.id}.png" class="cursor-pointer" id="avatar-menu" />
-    {:else}
-        <Avatar class="cursor-pointer" id="avatar-menu" />
-    {/if}
+    <div id="avatar-menu">
+        {#if $userStore.has_img}
+            <Avatar src="{env.PUBLIC_IMG_URL}/user/{$userStore.id}.png?{new Date().getTime()}" class="cursor-pointer" />
+        {:else}
+            <Avatar class="cursor-pointer"/>
+        {/if}
+    </div>
     <NavHamburger on:click={toggle} class1="w-full md:flex md:w-auto md:order-1"/>
 </div>
 <Dropdown placement="bottom" triggeredBy="#avatar-menu">
