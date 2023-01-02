@@ -11,6 +11,7 @@ import (
 	"github.com/noetarbouriech/storiesque/backend/internal/api"
 	"github.com/noetarbouriech/storiesque/backend/internal/auth"
 	"github.com/noetarbouriech/storiesque/backend/internal/db"
+	"github.com/noetarbouriech/storiesque/backend/internal/img"
 	"github.com/noetarbouriech/storiesque/backend/internal/story"
 	"github.com/noetarbouriech/storiesque/backend/internal/user"
 )
@@ -34,6 +35,13 @@ func main() {
 	}
 	queries := db.New(pg.DB)
 
+	// init s3
+	minio, err := img.NewMinio(
+		os.Getenv("S3_HOST"),
+		os.Getenv("S3_USER"),
+		os.Getenv("S3_PASSWORD"),
+	)
+
 	// init router
 	router := api.CreateRouter()
 
@@ -41,6 +49,7 @@ func main() {
 	authService := auth.NewService(queries, os.Getenv("JWT_SECRET"), os.Getenv("API_DOMAIN"))
 	storyService := story.NewService(queries)
 	userService := user.NewService(queries)
+	imgService := img.NewService(queries, minio)
 
 	// Public routes
 	router.Group(func(r chi.Router) {
@@ -56,6 +65,7 @@ func main() {
 
 		r.Group(userService.UserRoutes)
 		r.Group(storyService.UserRoutes)
+		r.Group(imgService.UserRoutes)
 	})
 
 	fmt.Println("Starting Storiesque api on " + os.Getenv("API_PORT"))

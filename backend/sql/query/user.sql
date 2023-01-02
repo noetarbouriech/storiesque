@@ -6,6 +6,10 @@ WHERE email = $1 LIMIT 1;
 SELECT * FROM "user"
 WHERE username = $1 LIMIT 1;
 
+-- name: GetUserWithId :one
+SELECT * FROM "user"
+WHERE id = $1 LIMIT 1;
+
 -- name: GetUserDetails :many
 SELECT u.*, s.id as story_id, s.title, s.description FROM "user" u
 LEFT JOIN story s ON u.id = s.author

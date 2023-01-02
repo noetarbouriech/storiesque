@@ -11,3 +11,16 @@ services:
     volumes:
       - ./backend/sql/schema.sql:/docker-entrypoint-initdb.d/create_schema.sql
       - ./backend/sql/trigger.sql:/docker-entrypoint-initdb.d/create_trigger.sql
+      - ./data/postgres:/var/lib/postgresql/data
+  s3:
+    image: "quay.io/minio/minio:latest"
+    container_name: "storiesque-s3-dev"
+    command: server /data --console-address ":9090"
+    environment:
+      MINIO_ROOT_USER: ${S3_USER}
+      MINIO_ROOT_PASSWORD: ${S3_PASSWORD}
+    ports:
+      - "9000:9000"
+      - "9090:9090"
+    volumes:
+      - ./data/minio:/data
