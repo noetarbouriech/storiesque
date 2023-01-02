@@ -252,7 +252,7 @@ func (s *Service) setAdmin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// delete user in db
+	// set user as admin in db
 	errDB := s.queries.SetAdmin(context.Background(), int64(id))
 	if errDB != nil {
 		utils.Response(w, r, 404, "user not found")

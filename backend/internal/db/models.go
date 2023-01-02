@@ -31,6 +31,7 @@ type Story struct {
 	Title       string
 	Description sql.NullString
 	HasImg      bool
+	Featured    bool
 	Author      int64
 	FirstPageID sql.NullInt64
 }

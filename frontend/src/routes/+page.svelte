@@ -1,10 +1,12 @@
 <script lang="ts">
-import StoryCard from '$lib/StoryCard.svelte';
-import StoryModal from '$lib/StoryModal.svelte';
-import { Hr, A, Heading, P, Span, Button } from 'flowbite-svelte'
-import { PencilSquare } from 'svelte-heros-v2'
+    import StoryCard from '$lib/StoryCard.svelte';
+    import StoryModal from '$lib/StoryModal.svelte';
+    import { Hr, A, Heading, P, Span, Button } from 'flowbite-svelte'
+    import { PencilSquare } from 'svelte-heros-v2'
+    import type { PageData } from './$types';
 
-let storyModal: boolean = false;
+    export let data: PageData;
+    let storyModal: boolean = false;
 
 </script>
 
@@ -24,24 +26,15 @@ let storyModal: boolean = false;
     Some of our personal <Span underline>favorites</Span>...
 </Heading>
 <div class="max-w-2xl mx-auto px-4 py-6 lg:max-w-7xl grid grid-cols-1 gap-y-10 sm:grid-cols-2 gap-x-8 lg:grid-cols-3">
-    <StoryCard
-        title="Great story"
-        description="This one is really good. I can recommend it !"
-        author="user1"
-        id={1}
-    ></StoryCard>
-    <StoryCard
-        title="Great story"
-        description="This one is really good. I can recommend it !"
-        author="user1"
-        id={2}
-    ></StoryCard>
-    <StoryCard
-        title="Great story"
-        description="This one is really good. I can recommend it !"
-        author="user1"
-        id={3}
-    ></StoryCard>
+    {#each data.featured as featured}
+        <StoryCard
+            title={featured.title}
+            description={featured.description}
+            author={featured.author_name}
+            id={featured.id}
+            has_img={featured.has_img}
+        ></StoryCard>
+    {/each}
 </div>
 
 <Hr class="my-4 mx-auto md:my-10" width="w-48" height="h-1"/>

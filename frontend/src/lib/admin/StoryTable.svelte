@@ -35,6 +35,21 @@
         }
     }
 
+    async function updateFeatured(storyId: number): Promise<void> {
+        try {
+            const response = await fetch(`${env.PUBLIC_API_URL}/story/${storyId}/featured`, {
+                method: 'PUT',
+                credentials: 'include'
+            });
+            const data = await response.json();
+            if (!response.ok) { 
+                alert(data.message);
+            }
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    }
+
     const previous = async () => {
         if (page === 1) return;
         page--;
@@ -53,6 +68,7 @@
         <TableHeadCell>ID</TableHeadCell>
         <TableHeadCell>Title</TableHeadCell>
         <TableHeadCell>Author</TableHeadCell>
+        <TableHeadCell>Is Featured ?</TableHeadCell>
         <TableHeadCell>Actions</TableHeadCell>
     </TableHead>
     <TableBody>
@@ -61,6 +77,9 @@
                 <TableBodyCell>{story.id}</TableBodyCell>
                 <TableBodyCell>{story.title}</TableBodyCell>
                 <TableBodyCell>{story.author_name}</TableBodyCell>
+                <TableBodyCell>
+                    <Toggle size="large" on:change={() => updateFeatured(story.id)} checked={story.is_featured} />
+                </TableBodyCell>
                 <TableBodyCell>
                     <Button href="/story/{slugify(story.title,{lower: true})}-{story.id}" target="_blank" class="!p-2"><ArrowTopRightOnSquare /></Button>
                     <Button on:click={() => {popupModal = true; selectedId = story.id}} class="!bg-red-600 !p-2"><Trash /></Button>

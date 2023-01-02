@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -29,6 +30,7 @@ type StoryCard struct {
 	Description string `json:"description"`
 	AuthorName  string `json:"author_name"`
 	HasImg      bool   `json:"has_img"`
+	Featured    bool   `json:"is_featured"`
 }
 
 type StoryCreation struct {
@@ -55,16 +57,18 @@ func init() {
 }
 
 func (s *Service) PublicRoutes(r chi.Router) {
-	r.Get("/story", s.getStories)    // get list of stories
-	r.Get("/story/{id}", s.getStory) // get a single story
+	r.Get("/story", s.getStories)                  // get list of stories
+	r.Get("/story/{id}", s.getStory)               // get a single story
+	r.Get("/story/featured", s.getFeaturedStories) // get stories that are featured
 
 	r.Get("/page/{id}", s.getPage) // get a single page
 }
 
 func (s *Service) UserRoutes(r chi.Router) {
-	r.Post("/story", s.createStory)        // create a story
-	r.Put("/story/{id}", s.updateStory)    // update a story
-	r.Delete("/story/{id}", s.deleteStory) // delete a story
+	r.Post("/story", s.createStory)              // create a story
+	r.Put("/story/{id}", s.updateStory)          // update a story
+	r.Put("/story/{id}/featured", s.setFeatured) // set a story as featured on homepage
+	r.Delete("/story/{id}", s.deleteStory)       // delete a story
 
 	r.Post("/page/{id}", s.createPage)   // add a choice to a given page
 	r.Put("/page/{id}", s.updatePage)    // update a page
@@ -100,6 +104,7 @@ func (s *Service) getStories(w http.ResponseWriter, r *http.Request) {
 			Description: story.Description.String,
 			AuthorName:  story.AuthorName,
 			HasImg:      story.HasImg,
+			Featured:    story.Featured,
 		}
 		rStories = append(rStories, rStory)
 	}
@@ -263,4 +268,55 @@ func (s *Service) deleteStory(w http.ResponseWriter, r *http.Request) {
 	}
 
 	utils.Response(w, r, 200, "story successfully deleted")
+}
+
+func (s *Service) setFeatured(w http.ResponseWriter, r *http.Request) {
+
+	// get id in param
+	id, errInt := strconv.Atoi(chi.URLParam(r, "id"))
+	if errInt != nil {
+		utils.Response(w, r, 400, "impossible to parse story id")
+		return
+	}
+
+	// check if user is authorized
+	if !utils.IsAdmin(r) {
+		utils.Response(w, r, 401, "user is not admin")
+		return
+	}
+
+	// set story as featured in db
+	errDB := s.queries.SetStoryAsFeatured(context.Background(), int64(id))
+	if errDB != nil {
+		fmt.Println(errDB.Error())
+		utils.Response(w, r, 404, "story not found")
+		return
+	}
+
+	utils.Response(w, r, 200, "story successfully updated")
+}
+
+func (s *Service) getFeaturedStories(w http.ResponseWriter, r *http.Request) {
+
+	stories, err := s.queries.GetFeaturedStories(context.Background())
+	if err != nil {
+		utils.Response(w, r, 404, "story not found")
+		return
+	}
+
+	// map stories to json struct
+	rStories := []StoryCard{}
+	for _, story := range stories {
+		rStory := StoryCard{
+			Id:          story.ID,
+			Title:       story.Title,
+			Description: story.Description.String,
+			AuthorName:  story.AuthorName,
+			HasImg:      story.HasImg,
+			Featured:    true,
+		}
+		rStories = append(rStories, rStory)
+	}
+
+	render.JSON(w, r, rStories)
 }

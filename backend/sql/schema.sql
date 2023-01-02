@@ -23,6 +23,7 @@ CREATE TABLE story
   title VARCHAR(48) NOT NULL,
   description VARCHAR(512),
   has_img BOOLEAN NOT NULL DEFAULT false,
+  featured BOOLEAN NOT NULL DEFAULT false,
   author BIGINT NOT NULL REFERENCES "user"(id),
   first_page_id BIGINT REFERENCES page(id)
 );

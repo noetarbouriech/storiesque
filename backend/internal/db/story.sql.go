@@ -13,7 +13,7 @@ import (
 const createStory = `-- name: CreateStory :one
 INSERT INTO story (title, description, author)
 VALUES ($1, $2, $3)
-RETURNING id, title, description, has_img, author, first_page_id
+RETURNING id, title, description, has_img, featured, author, first_page_id
 `
 
 type CreateStoryParams struct {
@@ -30,6 +30,7 @@ func (q *Queries) CreateStory(ctx context.Context, arg CreateStoryParams) (Story
 		&i.Title,
 		&i.Description,
 		&i.HasImg,
+		&i.Featured,
 		&i.Author,
 		&i.FirstPageID,
 	)
@@ -44,6 +45,51 @@ WHERE id = $1
 func (q *Queries) DeleteStory(ctx context.Context, id int64) error {
 	_, err := q.db.ExecContext(ctx, deleteStory, id)
 	return err
+}
+
+const getFeaturedStories = `-- name: GetFeaturedStories :many
+SELECT s.id, s.title, s.description, s.has_img, u.username as author_name FROM story s
+JOIN "user" u ON s.author = u.id
+WHERE s.featured = true
+ORDER BY s.id
+LIMIT 3
+`
+
+type GetFeaturedStoriesRow struct {
+	ID          int64
+	Title       string
+	Description sql.NullString
+	HasImg      bool
+	AuthorName  string
+}
+
+func (q *Queries) GetFeaturedStories(ctx context.Context) ([]GetFeaturedStoriesRow, error) {
+	rows, err := q.db.QueryContext(ctx, getFeaturedStories)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetFeaturedStoriesRow
+	for rows.Next() {
+		var i GetFeaturedStoriesRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Title,
+			&i.Description,
+			&i.HasImg,
+			&i.AuthorName,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const getStory = `-- name: GetStory :one
@@ -88,7 +134,7 @@ func (q *Queries) GetStoryAuthor(ctx context.Context, id int64) (int64, error) {
 }
 
 const searchStories = `-- name: SearchStories :many
-SELECT s.id, s.title, s.description, s.has_img, u.username as author_name FROM story s
+SELECT s.id, s.title, s.description, s.has_img, s.featured, u.username as author_name FROM story s
 JOIN "user" u ON s.author = u.id
 WHERE title LIKE '%' || $1 || '%'
 ORDER BY s.id
@@ -106,6 +152,7 @@ type SearchStoriesRow struct {
 	Title       string
 	Description sql.NullString
 	HasImg      bool
+	Featured    bool
 	AuthorName  string
 }
 
@@ -123,6 +170,7 @@ func (q *Queries) SearchStories(ctx context.Context, arg SearchStoriesParams) ([
 			&i.Title,
 			&i.Description,
 			&i.HasImg,
+			&i.Featured,
 			&i.AuthorName,
 		); err != nil {
 			return nil, err
@@ -151,6 +199,17 @@ type SetImgStoryParams struct {
 
 func (q *Queries) SetImgStory(ctx context.Context, arg SetImgStoryParams) error {
 	_, err := q.db.ExecContext(ctx, setImgStory, arg.ID, arg.HasImg)
+	return err
+}
+
+const setStoryAsFeatured = `-- name: SetStoryAsFeatured :exec
+UPDATE story
+SET featured = NOT featured
+WHERE id = $1
+`
+
+func (q *Queries) SetStoryAsFeatured(ctx context.Context, id int64) error {
+	_, err := q.db.ExecContext(ctx, setStoryAsFeatured, id)
 	return err
 }
 
