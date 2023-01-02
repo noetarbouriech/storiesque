@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { Heading, P, Hr, Img, Button, Input, Textarea, Dropzone, Tooltip } from 'flowbite-svelte'
+    import { Heading, P, Hr, Img, Button, Input, Textarea, Dropzone } from 'flowbite-svelte'
     import { env } from '$env/dynamic/public';
     import { userStore } from '../../../store';
     import slugify from 'slugify';
@@ -7,6 +7,7 @@
     import { Play } from 'svelte-heros-v2'
 	import EditButton from '$lib/EditButton.svelte';
 	import AddToShelf from '$lib/AddToShelf.svelte';
+	import { onMount } from 'svelte';
 
     export let data: PageData;
     let editMode: boolean;
@@ -24,6 +25,14 @@
             })
         })
     }
+
+    let img: HTMLImageElement;
+
+    onMount(() => {
+        img.src = `${env.PUBLIC_IMG_URL}/story/${data.story.id}.png`;
+        img.onerror = (): string => img.src = "/default_story.png"
+    });
+
 </script>
 
 {#if editMode}
@@ -37,7 +46,7 @@
     <Textarea id="description" name="description" class="text-center" bind:value={data.story.description} required />
 {:else}
     <Heading class="text-center pb-8" tag="h1">{data.story.title}</Heading>
-    <Img src="https://loremflickr.com/840/480" alt="{data.story.title} cover image" alignment="mx-auto" class="rounded-lg mb-8" />
+    <img bind:this={img} alt="{data.story.title} cover image" class="h-[360px] mx-auto rounded-lg mb-8" />
     <Hr class="my-8" width="w-64"><P color="text-gray-500 dark:text-gray-400">DESCRIPTION</P></Hr>
     <P class="mx-auto max-w-xl" align="center" weight="light" color="text-gray-500 dark:text-gray-400">{data.story.description}</P>
 {/if}
