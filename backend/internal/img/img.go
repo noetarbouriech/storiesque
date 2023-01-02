@@ -64,10 +64,16 @@ func (s *Service) UploadImage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// check if resource with this id exists
-	exist := s.checkResource(resType, id)
-	if !exist {
-		utils.Response(w, r, 404, "resource with this id doesn't exist")
+	// get owner of the resource
+	owner, err := s.getResource(resType, id)
+	if err != nil {
+		utils.Response(w, r, 500, "internal error")
+		return
+	}
+
+	// check if user is authorized
+	if !utils.IsOwner(r, int(owner)) {
+		utils.Response(w, r, 401, "user is not the owner of the given resource")
 		return
 	}
 
@@ -130,10 +136,16 @@ func (s *Service) DeleteImage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// check if resource with this id exists
-	exist := s.checkResource(resType, id)
-	if !exist {
-		utils.Response(w, r, 404, "resource with this id doesn't exist")
+	// get owner of the resource
+	owner, err := s.getResource(resType, id)
+	if err != nil {
+		utils.Response(w, r, 500, "internal error")
+		return
+	}
+
+	// check if user is authorized
+	if !utils.IsOwner(r, int(owner)) {
+		utils.Response(w, r, 401, "user is not the owner of the given resource")
 		return
 	}
 
@@ -156,22 +168,22 @@ func (s *Service) DeleteImage(w http.ResponseWriter, r *http.Request) {
 	utils.Response(w, r, 200, "image deleted")
 }
 
-// check if given resource exists in database
-func (s *Service) checkResource(resType string, id int64) bool {
-	var err error
+// get the owner of DB resource of an object of type resType and of id id
+func (s *Service) getResource(resType string, id int64) (int, error) {
 
 	switch resType {
 	case "user":
-		_, err = s.queries.GetUserWithId(context.Background(), id)
+		res, err := s.queries.GetUserWithId(context.Background(), id)
+		return int(res.ID), err
 	case "story":
-		_, err = s.queries.GetStory(context.Background(), id)
+		res, err := s.queries.GetStory(context.Background(), id)
+		return int(res.Author), err
 	case "page":
-		_, err = s.queries.GetPage(context.Background(), id)
+		res, err := s.queries.GetPage(context.Background(), id)
+		return int(res.Author), err
 	default:
-		err = errors.New("unknown resource type")
+		return 0, errors.New("unknown resource type")
 	}
-
-	return err == nil
 }
 
 // change img indicator on db

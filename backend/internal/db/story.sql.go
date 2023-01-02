@@ -93,7 +93,7 @@ func (q *Queries) GetFeaturedStories(ctx context.Context) ([]GetFeaturedStoriesR
 }
 
 const getStory = `-- name: GetStory :one
-SELECT s.id, s.title, s.description, s.first_page_id, s.has_img, u.username as author_name FROM story s
+SELECT s.id, s.title, s.description, s.first_page_id, s.has_img, u.id as author, u.username as author_name FROM story s
 JOIN "user" u ON s.author = u.id
 WHERE s.id = $1 LIMIT 1
 `
@@ -104,6 +104,7 @@ type GetStoryRow struct {
 	Description sql.NullString
 	FirstPageID sql.NullInt64
 	HasImg      bool
+	Author      int64
 	AuthorName  string
 }
 
@@ -116,6 +117,7 @@ func (q *Queries) GetStory(ctx context.Context, id int64) (GetStoryRow, error) {
 		&i.Description,
 		&i.FirstPageID,
 		&i.HasImg,
+		&i.Author,
 		&i.AuthorName,
 	)
 	return i, err
