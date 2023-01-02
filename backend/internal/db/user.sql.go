@@ -13,7 +13,7 @@ import (
 const createUser = `-- name: CreateUser :one
 INSERT INTO "user" (username, password_hash, email)
 VALUES ($1, $2, $3)
-RETURNING id, username, password_hash, is_admin, email
+RETURNING id, username, password_hash, has_img, is_admin, email
 `
 
 type CreateUserParams struct {
@@ -29,6 +29,7 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 		&i.ID,
 		&i.Username,
 		&i.PasswordHash,
+		&i.HasImg,
 		&i.IsAdmin,
 		&i.Email,
 	)
@@ -46,7 +47,7 @@ func (q *Queries) DeleteUser(ctx context.Context, id int64) error {
 }
 
 const getUserDetails = `-- name: GetUserDetails :many
-SELECT u.id, u.username, u.password_hash, u.is_admin, u.email, s.id as story_id, s.title, s.description FROM "user" u
+SELECT u.id, u.username, u.password_hash, u.has_img, u.is_admin, u.email, s.id as story_id, s.title, s.description, s.has_img as story_has_img FROM "user" u
 LEFT JOIN story s ON u.id = s.author
 WHERE username = $1
 `
@@ -55,11 +56,13 @@ type GetUserDetailsRow struct {
 	ID           int64
 	Username     string
 	PasswordHash string
+	HasImg       bool
 	IsAdmin      bool
 	Email        string
 	StoryID      sql.NullInt64
 	Title        sql.NullString
 	Description  sql.NullString
+	StoryHasImg  sql.NullBool
 }
 
 func (q *Queries) GetUserDetails(ctx context.Context, username string) ([]GetUserDetailsRow, error) {
@@ -75,11 +78,13 @@ func (q *Queries) GetUserDetails(ctx context.Context, username string) ([]GetUse
 			&i.ID,
 			&i.Username,
 			&i.PasswordHash,
+			&i.HasImg,
 			&i.IsAdmin,
 			&i.Email,
 			&i.StoryID,
 			&i.Title,
 			&i.Description,
+			&i.StoryHasImg,
 		); err != nil {
 			return nil, err
 		}
@@ -95,7 +100,7 @@ func (q *Queries) GetUserDetails(ctx context.Context, username string) ([]GetUse
 }
 
 const getUserWithEmail = `-- name: GetUserWithEmail :one
-SELECT id, username, password_hash, is_admin, email FROM "user"
+SELECT id, username, password_hash, has_img, is_admin, email FROM "user"
 WHERE email = $1 LIMIT 1
 `
 
@@ -106,6 +111,7 @@ func (q *Queries) GetUserWithEmail(ctx context.Context, email string) (User, err
 		&i.ID,
 		&i.Username,
 		&i.PasswordHash,
+		&i.HasImg,
 		&i.IsAdmin,
 		&i.Email,
 	)
@@ -113,7 +119,7 @@ func (q *Queries) GetUserWithEmail(ctx context.Context, email string) (User, err
 }
 
 const getUserWithId = `-- name: GetUserWithId :one
-SELECT id, username, password_hash, is_admin, email FROM "user"
+SELECT id, username, password_hash, has_img, is_admin, email FROM "user"
 WHERE id = $1 LIMIT 1
 `
 
@@ -124,6 +130,7 @@ func (q *Queries) GetUserWithId(ctx context.Context, id int64) (User, error) {
 		&i.ID,
 		&i.Username,
 		&i.PasswordHash,
+		&i.HasImg,
 		&i.IsAdmin,
 		&i.Email,
 	)
@@ -131,7 +138,7 @@ func (q *Queries) GetUserWithId(ctx context.Context, id int64) (User, error) {
 }
 
 const getUserWithUsername = `-- name: GetUserWithUsername :one
-SELECT id, username, password_hash, is_admin, email FROM "user"
+SELECT id, username, password_hash, has_img, is_admin, email FROM "user"
 WHERE username = $1 LIMIT 1
 `
 
@@ -142,6 +149,7 @@ func (q *Queries) GetUserWithUsername(ctx context.Context, username string) (Use
 		&i.ID,
 		&i.Username,
 		&i.PasswordHash,
+		&i.HasImg,
 		&i.IsAdmin,
 		&i.Email,
 	)
@@ -149,7 +157,7 @@ func (q *Queries) GetUserWithUsername(ctx context.Context, username string) (Use
 }
 
 const searchUsers = `-- name: SearchUsers :many
-SELECT id, username, password_hash, is_admin, email FROM "user"
+SELECT id, username, password_hash, has_img, is_admin, email FROM "user"
 WHERE username LIKE '%' || $1 || '%'
 ORDER BY id
 LIMIT 40
@@ -174,6 +182,7 @@ func (q *Queries) SearchUsers(ctx context.Context, arg SearchUsersParams) ([]Use
 			&i.ID,
 			&i.Username,
 			&i.PasswordHash,
+			&i.HasImg,
 			&i.IsAdmin,
 			&i.Email,
 		); err != nil {
@@ -198,6 +207,22 @@ WHERE id = $1
 
 func (q *Queries) SetAdmin(ctx context.Context, id int64) error {
 	_, err := q.db.ExecContext(ctx, setAdmin, id)
+	return err
+}
+
+const setImgUser = `-- name: SetImgUser :exec
+UPDATE "user"
+SET has_img = $2
+WHERE id = $1
+`
+
+type SetImgUserParams struct {
+	ID     int64
+	HasImg bool
+}
+
+func (q *Queries) SetImgUser(ctx context.Context, arg SetImgUserParams) error {
+	_, err := q.db.ExecContext(ctx, setImgUser, arg.ID, arg.HasImg)
 	return err
 }
 

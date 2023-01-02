@@ -25,6 +25,7 @@ type Page struct {
 	Author  int64         `json:"author_id"`
 	Action  string        `json:"action"             validate:"gte=0,lte=64"`
 	Body    string        `json:"body"              validate:"gte=0,lte=4096"`
+	HasImg  bool          `json:"has_img"`
 	Choices []PageChoices `json:"choices"`
 }
 
@@ -66,6 +67,7 @@ func (s *Service) getPage(w http.ResponseWriter, r *http.Request) {
 		Author:  page.Author,
 		Action:  page.Action,
 		Body:    page.Body,
+		HasImg:  page.HasImg,
 		Choices: choicesStruct,
 	})
 }

@@ -12,7 +12,7 @@ import (
 const createPage = `-- name: CreatePage :one
 INSERT INTO page (action, author, body)
 VALUES ($1, $2, $3)
-RETURNING id, author, action, body
+RETURNING id, author, has_img, action, body
 `
 
 type CreatePageParams struct {
@@ -27,6 +27,7 @@ func (q *Queries) CreatePage(ctx context.Context, arg CreatePageParams) (Page, e
 	err := row.Scan(
 		&i.ID,
 		&i.Author,
+		&i.HasImg,
 		&i.Action,
 		&i.Body,
 	)
@@ -44,7 +45,7 @@ func (q *Queries) DeletePage(ctx context.Context, id int64) error {
 }
 
 const getPage = `-- name: GetPage :one
-SELECT id, author, action, body FROM page
+SELECT id, author, has_img, action, body FROM page
 WHERE id = $1 LIMIT 1
 `
 
@@ -54,10 +55,27 @@ func (q *Queries) GetPage(ctx context.Context, id int64) (Page, error) {
 	err := row.Scan(
 		&i.ID,
 		&i.Author,
+		&i.HasImg,
 		&i.Action,
 		&i.Body,
 	)
 	return i, err
+}
+
+const setImgPage = `-- name: SetImgPage :exec
+UPDATE page
+SET has_img = $2
+WHERE id = $1
+`
+
+type SetImgPageParams struct {
+	ID     int64
+	HasImg bool
+}
+
+func (q *Queries) SetImgPage(ctx context.Context, arg SetImgPageParams) error {
+	_, err := q.db.ExecContext(ctx, setImgPage, arg.ID, arg.HasImg)
+	return err
 }
 
 const updatePage = `-- name: UpdatePage :exec

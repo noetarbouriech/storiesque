@@ -3,6 +3,7 @@ CREATE TABLE "user"
   id BIGSERIAL PRIMARY KEY,
   username VARCHAR(24) NOT NULL,
   password_hash VARCHAR(64) NOT NULL,
+  has_img BOOLEAN NOT NULL DEFAULT false,
   is_admin BOOLEAN NOT NULL DEFAULT false,
   email VARCHAR(128) NOT NULL
 );
@@ -11,6 +12,7 @@ CREATE TABLE page
 (
   id BIGSERIAL PRIMARY KEY,
   author BIGINT NOT NULL REFERENCES "user"(id),
+  has_img BOOLEAN NOT NULL DEFAULT false,
   action VARCHAR(64) NOT NULL,
   body VARCHAR(4096) NOT NULL
 );
@@ -20,6 +22,7 @@ CREATE TABLE story
   id BIGSERIAL PRIMARY KEY,
   title VARCHAR(48) NOT NULL,
   description VARCHAR(512),
+  has_img BOOLEAN NOT NULL DEFAULT false,
   author BIGINT NOT NULL REFERENCES "user"(id),
   first_page_id BIGINT REFERENCES page(id)
 );

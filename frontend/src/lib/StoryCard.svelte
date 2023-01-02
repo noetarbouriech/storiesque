@@ -2,27 +2,22 @@
     import { Card, Button } from "flowbite-svelte";
     import slugify from 'slugify';
     import { env } from '$env/dynamic/public';
-    import { onMount } from "svelte";
-    export let title : string;
-    export let description : string;
-    export let id : number;
-    export let author : string;
+
+    export let title: string;
+    export let description: string;
+    export let id: number;
+    export let author: string;
+    export let has_img: boolean
 
     if (description.length > 103) {
       description = description.substring(0,100) + "...";
     }
 
-    let img: string;
-
-    onMount(async () => {
-        img = `${env.PUBLIC_IMG_URL}/story/${id}.png`;
-        let response = await fetch(img);
-        if (!response.ok) img = "/default_story.png"
-    });
+    let image_url: string = has_img ? `${env.PUBLIC_IMG_URL}/story/${id}.png` : "/default_story.png"
 
 </script>
 
-<Card img={img}>
+<Card img={image_url}>
   <h3 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">{title}</h3>
   <h4 class="mb-2 text-l tracking-tight text-gray-900 dark:text-white">by <a class="font-bold" href="/user/{author}">@{author}</a></h4>
   <p class="mb-3 font-normal text-gray-700 dark:text-gray-400 leading-tight">

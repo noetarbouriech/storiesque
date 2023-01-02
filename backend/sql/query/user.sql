@@ -11,7 +11,7 @@ SELECT * FROM "user"
 WHERE id = $1 LIMIT 1;
 
 -- name: GetUserDetails :many
-SELECT u.*, s.id as story_id, s.title, s.description FROM "user" u
+SELECT u.*, s.id as story_id, s.title, s.description, s.has_img as story_has_img FROM "user" u
 LEFT JOIN story s ON u.id = s.author
 WHERE username = $1;
 
@@ -49,3 +49,7 @@ WHERE id = $1;
 DELETE FROM "user"
 WHERE id = $1;
 
+-- name: SetImgUser :exec
+UPDATE "user"
+SET has_img = $2
+WHERE id = $1;

@@ -20,3 +20,8 @@ WHERE id = $1;
 -- name: DeletePage :exec
 DELETE FROM page
 WHERE id = $1;
+
+-- name: SetImgPage :exec
+UPDATE page
+SET has_img = $2
+WHERE id = $1;

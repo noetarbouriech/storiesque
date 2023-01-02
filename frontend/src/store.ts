@@ -6,6 +6,7 @@ export type User = {
     username: string,
     email: string,
     is_admin: boolean,
+    has_img: boolean
 };
 
 let userStore = writable<User>(JSON.parse("{\"username\":\"\",\"email\":\"\"}"));

@@ -13,7 +13,7 @@ import (
 const createStory = `-- name: CreateStory :one
 INSERT INTO story (title, description, author)
 VALUES ($1, $2, $3)
-RETURNING id, title, description, author, first_page_id
+RETURNING id, title, description, has_img, author, first_page_id
 `
 
 type CreateStoryParams struct {
@@ -29,6 +29,7 @@ func (q *Queries) CreateStory(ctx context.Context, arg CreateStoryParams) (Story
 		&i.ID,
 		&i.Title,
 		&i.Description,
+		&i.HasImg,
 		&i.Author,
 		&i.FirstPageID,
 	)
@@ -46,7 +47,7 @@ func (q *Queries) DeleteStory(ctx context.Context, id int64) error {
 }
 
 const getStory = `-- name: GetStory :one
-SELECT s.id, s.title, s.description, s.first_page_id, u.username as author_name FROM story s
+SELECT s.id, s.title, s.description, s.first_page_id, s.has_img, u.username as author_name FROM story s
 JOIN "user" u ON s.author = u.id
 WHERE s.id = $1 LIMIT 1
 `
@@ -56,6 +57,7 @@ type GetStoryRow struct {
 	Title       string
 	Description sql.NullString
 	FirstPageID sql.NullInt64
+	HasImg      bool
 	AuthorName  string
 }
 
@@ -67,6 +69,7 @@ func (q *Queries) GetStory(ctx context.Context, id int64) (GetStoryRow, error) {
 		&i.Title,
 		&i.Description,
 		&i.FirstPageID,
+		&i.HasImg,
 		&i.AuthorName,
 	)
 	return i, err
@@ -85,7 +88,7 @@ func (q *Queries) GetStoryAuthor(ctx context.Context, id int64) (int64, error) {
 }
 
 const searchStories = `-- name: SearchStories :many
-SELECT s.id, s.title, s.description, u.username as author_name FROM story s
+SELECT s.id, s.title, s.description, s.has_img, u.username as author_name FROM story s
 JOIN "user" u ON s.author = u.id
 WHERE title LIKE '%' || $1 || '%'
 ORDER BY s.id
@@ -102,6 +105,7 @@ type SearchStoriesRow struct {
 	ID          int64
 	Title       string
 	Description sql.NullString
+	HasImg      bool
 	AuthorName  string
 }
 
@@ -118,6 +122,7 @@ func (q *Queries) SearchStories(ctx context.Context, arg SearchStoriesParams) ([
 			&i.ID,
 			&i.Title,
 			&i.Description,
+			&i.HasImg,
 			&i.AuthorName,
 		); err != nil {
 			return nil, err
@@ -131,6 +136,22 @@ func (q *Queries) SearchStories(ctx context.Context, arg SearchStoriesParams) ([
 		return nil, err
 	}
 	return items, nil
+}
+
+const setImgStory = `-- name: SetImgStory :exec
+UPDATE story
+SET has_img = $2
+WHERE id = $1
+`
+
+type SetImgStoryParams struct {
+	ID     int64
+	HasImg bool
+}
+
+func (q *Queries) SetImgStory(ctx context.Context, arg SetImgStoryParams) error {
+	_, err := q.db.ExecContext(ctx, setImgStory, arg.ID, arg.HasImg)
+	return err
 }
 
 const updateStory = `-- name: UpdateStory :exec

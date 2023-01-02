@@ -36,6 +36,7 @@ type User struct {
 	Username string `json:"username"`
 	Email    string `json:"email"`
 	IsAdmin  bool   `json:"is_admin"`
+	HasImg   bool   `json:"has_img"`
 }
 
 type UserDetails struct {
@@ -44,6 +45,7 @@ type UserDetails struct {
 	Email    string            `json:"email"`
 	IsAdmin  bool              `json:"is_admin"`
 	Stories  []story.StoryCard `json:"stories"`
+	HasImg   bool              `json:"has_img"`
 }
 
 // use a single instance of Validate, it caches struct info
@@ -99,6 +101,7 @@ func (s *Service) getUsers(w http.ResponseWriter, r *http.Request) {
 			Username: user.Username,
 			Email:    user.Email,
 			IsAdmin:  user.IsAdmin,
+			HasImg:   user.HasImg,
 		}
 		rUsers = append(rUsers, rUser)
 	}
@@ -127,6 +130,7 @@ func (s *Service) getUser(w http.ResponseWriter, r *http.Request) {
 				Title:       line.Title.String,
 				Description: line.Description.String,
 				AuthorName:  line.Username,
+				HasImg:      line.StoryHasImg.Bool,
 			}
 			stories = append(stories, story)
 		}
@@ -138,6 +142,7 @@ func (s *Service) getUser(w http.ResponseWriter, r *http.Request) {
 		Username: user[0].Username,
 		Email:    user[0].Email,
 		IsAdmin:  user[0].IsAdmin,
+		HasImg:   user[0].HasImg,
 		Stories:  stories,
 	})
 }

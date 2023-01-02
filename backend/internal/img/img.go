@@ -102,6 +102,12 @@ func (s *Service) UploadImage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	err = s.setImgOnDB(resType, id, true)
+	if err != nil {
+		utils.Response(w, r, 500, "internal error")
+		return
+	}
+
 	// response with image uri
 	render.Status(r, 201)
 	render.JSON(w, r, map[string]string{"uri": info.Key})
@@ -123,4 +129,31 @@ func (s *Service) checkResource(resType string, id int64) bool {
 	}
 
 	return err == nil
+}
+
+// change img indicator on db
+func (s *Service) setImgOnDB(resType string, id int64, has_img bool) error {
+	var err error
+
+	switch resType {
+	case "user":
+		err = s.queries.SetImgUser(context.Background(), db.SetImgUserParams{
+			ID:     id,
+			HasImg: has_img,
+		})
+	case "story":
+		err = s.queries.SetImgStory(context.Background(), db.SetImgStoryParams{
+			ID:     id,
+			HasImg: has_img,
+		})
+	case "page":
+		err = s.queries.SetImgPage(context.Background(), db.SetImgPageParams{
+			ID:     id,
+			HasImg: has_img,
+		})
+	default:
+		err = errors.New("unknown resource type")
+	}
+
+	return err
 }

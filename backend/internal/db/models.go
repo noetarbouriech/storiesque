@@ -16,6 +16,7 @@ type Choice struct {
 type Page struct {
 	ID     int64
 	Author int64
+	HasImg bool
 	Action string
 	Body   string
 }
@@ -29,6 +30,7 @@ type Story struct {
 	ID          int64
 	Title       string
 	Description sql.NullString
+	HasImg      bool
 	Author      int64
 	FirstPageID sql.NullInt64
 }
@@ -37,6 +39,7 @@ type User struct {
 	ID           int64
 	Username     string
 	PasswordHash string
+	HasImg       bool
 	IsAdmin      bool
 	Email        string
 }

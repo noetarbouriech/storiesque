@@ -93,6 +93,7 @@ func (s *Service) login(w http.ResponseWriter, r *http.Request) {
 		Username: userDB.Username,
 		Email:    userDB.Email,
 		IsAdmin:  userDB.IsAdmin,
+		HasImg:   userDB.HasImg,
 	})
 }
 

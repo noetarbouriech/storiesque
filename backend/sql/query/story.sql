@@ -1,5 +1,5 @@
 -- name: GetStory :one
-SELECT s.id, s.title, s.description, s.first_page_id, u.username as author_name FROM story s
+SELECT s.id, s.title, s.description, s.first_page_id, s.has_img, u.username as author_name FROM story s
 JOIN "user" u ON s.author = u.id
 WHERE s.id = $1 LIMIT 1;
 
@@ -8,7 +8,7 @@ SELECT author FROM story
 WHERE id = $1 LIMIT 1;
 
 -- name: SearchStories :many
-SELECT s.id, s.title, s.description, u.username as author_name FROM story s
+SELECT s.id, s.title, s.description, s.has_img, u.username as author_name FROM story s
 JOIN "user" u ON s.author = u.id
 WHERE title LIKE '%' || $1 || '%'
 ORDER BY s.id
@@ -32,4 +32,9 @@ WHERE id = $1;
 
 -- name: DeleteStory :exec
 DELETE FROM story
+WHERE id = $1;
+
+-- name: SetImgStory :exec
+UPDATE story
+SET has_img = $2
 WHERE id = $1;

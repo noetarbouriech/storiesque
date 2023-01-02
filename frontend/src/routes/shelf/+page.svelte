@@ -45,6 +45,7 @@
             description={story.description}
             author={story.author_name}
             id={story.id}
+            has_img={story.has_img}
         ></StoryCard>
     {/each}
 </div>

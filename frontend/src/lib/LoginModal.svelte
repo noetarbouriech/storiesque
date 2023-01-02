@@ -24,6 +24,7 @@
                     username: data.username,
                     email: data.email,
                     is_admin: data.is_admin,
+                    has_img: data.has_img
                 };
                 open = false;
             } else {

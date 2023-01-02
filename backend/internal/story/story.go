@@ -28,6 +28,7 @@ type StoryCard struct {
 	Title       string `json:"title"`
 	Description string `json:"description"`
 	AuthorName  string `json:"author_name"`
+	HasImg      bool   `json:"has_img"`
 }
 
 type StoryCreation struct {
@@ -43,6 +44,7 @@ type StoryDetails struct {
 	Description   string `json:"description"`
 	First_page_id int64  `json:"first_page_id"`
 	AuthorName    string `json:"author_name"`
+	HasImg        bool   `json:"has_img"`
 }
 
 // use a single instance of Validate, it caches struct info
@@ -97,6 +99,7 @@ func (s *Service) getStories(w http.ResponseWriter, r *http.Request) {
 			Title:       story.Title,
 			Description: story.Description.String,
 			AuthorName:  story.AuthorName,
+			HasImg:      story.HasImg,
 		}
 		rStories = append(rStories, rStory)
 	}
@@ -125,6 +128,7 @@ func (s *Service) getStory(w http.ResponseWriter, r *http.Request) {
 		Description:   story.Description.String,
 		First_page_id: story.FirstPageID.Int64,
 		AuthorName:    story.AuthorName,
+		HasImg:        story.HasImg,
 	}
 
 	render.JSON(w, r, storyJson)

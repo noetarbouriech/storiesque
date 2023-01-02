@@ -25,7 +25,7 @@
 <Heading class="text-center" tag="h1">👤 Users</Heading>
 <div class="max-w-2xl mx-auto px-4 py-8 lg:max-w-7xl grid grid-cols-1 gap-y-10 sm:grid-cols-2 gap-x-8 lg:grid-cols-3 xl:grid-cols-4">
     {#each data.users as user}
-        <UserCard username={user.username}></UserCard>
+        <UserCard username={user.username} id={user.id} has_img={user.has_img}></UserCard>
     {/each}
 </div>
 

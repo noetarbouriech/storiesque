@@ -32,6 +32,7 @@
                         username: username,
                         email: email,
                         is_admin: $userStore.is_admin,
+                        has_img: $userStore.has_img
                     };
                 }
             } else {
