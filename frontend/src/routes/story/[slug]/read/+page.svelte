@@ -94,6 +94,7 @@
         description={data.story.description}
         author={data.story.author_name}
         id={data.story.id}
+        has_img={data.story.has_img}
     />
 </Popover>
 

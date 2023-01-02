@@ -30,6 +30,7 @@ func NewService(queries *db.Queries, minio *Minio) *Service {
 
 func (s *Service) UserRoutes(r chi.Router) {
 	r.Post("/image/upload", s.UploadImage)
+	r.Delete("/image/{type}/{id}", s.DeleteImage)
 }
 
 func (s *Service) UploadImage(w http.ResponseWriter, r *http.Request) {
@@ -111,6 +112,48 @@ func (s *Service) UploadImage(w http.ResponseWriter, r *http.Request) {
 	// response with image uri
 	render.Status(r, 201)
 	render.JSON(w, r, map[string]string{"uri": info.Key})
+}
+
+func (s *Service) DeleteImage(w http.ResponseWriter, r *http.Request) {
+
+	// get type from uri
+	resType := chi.URLParam(r, "type")
+	if resType != "user" && resType != "page" && resType != "story" {
+		utils.Response(w, r, 400, "unknown resource type")
+		return
+	}
+
+	// get id in param
+	id, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
+	if err != nil {
+		utils.Response(w, r, 400, "id bad format")
+		return
+	}
+
+	// check if resource with this id exists
+	exist := s.checkResource(resType, id)
+	if !exist {
+		utils.Response(w, r, 404, "resource with this id doesn't exist")
+		return
+	}
+
+	// create the filename
+	filename := fmt.Sprintf("%s/%s.png", r.FormValue("type"), r.FormValue("id"))
+
+	// upload file as object in s3
+	err = s.minio.S3.RemoveObject(context.Background(), "storiesque", filename, minio.RemoveObjectOptions{})
+	if err != nil {
+		utils.Response(w, r, 500, "internal error")
+		return
+	}
+
+	err = s.setImgOnDB(resType, id, false)
+	if err != nil {
+		utils.Response(w, r, 500, "internal error")
+		return
+	}
+
+	utils.Response(w, r, 200, "image deleted")
 }
 
 // check if given resource exists in database
