@@ -46,6 +46,7 @@ func (s *Service) getShelf(w http.ResponseWriter, r *http.Request) {
 			Title:       storyDB.Title,
 			Description: storyDB.Description.String,
 			AuthorName:  storyDB.AuthorName,
+			HasImg:      storyDB.HasImg,
 		}
 		rStories = append(rStories, rStory)
 	}

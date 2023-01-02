@@ -1,5 +1,5 @@
 -- name: GetShelf :many
-SELECT st.id, st.title, st.description, u.username as author_name FROM shelf sh
+SELECT st.id, st.title, st.description, st.has_img, u.username as author_name FROM shelf sh
 JOIN story st ON sh.story_id = st.id
 JOIN "user" u ON st.author = u.id
 WHERE sh.owner_id = $1
