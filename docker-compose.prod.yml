@@ -2,13 +2,15 @@ version: "3.9"
 services:
   api:
     container_name: "storiesque-api"
-    build: "backend/."
+    build: 
+      context: ./
+      dockerfile: ./backend/Dockerfile
     depends_on:
       db:
         condition: service_healthy
     labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.api.rule=Host(`api.localhost`)"
+      - "traefik.enable=enable"
+      - "traefik.http.routers.api.rule=Host(`${API_DOMAIN}`)"
       - "traefik.http.routers.api.entrypoints=web"
   db:
     image: postgres
@@ -24,11 +26,43 @@ services:
     volumes:
       - ./backend/sql/schema.sql:/docker-entrypoint-initdb.d/create_schema.sql
       - ./backend/sql/trigger.sql:/docker-entrypoint-initdb.d/create_trigger.sql
+    labels:
+      - "traefik.enable=false"
+  web:
+    container_name: "storiesque-web"
+    build: 
+      context: ./
+      dockerfile: ./frontend/Dockerfile
+    environment:
+      PUBLIC_API_URL: ${PUBLIC_API_URL}
+      PUBLIC_IMG_URL: ${PUBLIC_IMG_URL}
+    depends_on:
+      - api
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.web.rule=Host(`${WEB_DOMAIN}`)"
+      - "traefik.http.routers.web.entrypoints=web"
+  s3:
+    image: "quay.io/minio/minio:latest"
+    container_name: "storiesque-s3"
+    command: server /data --console-address ":9090"
+    environment:
+      MINIO_ROOT_USER: ${S3_USER}
+      MINIO_ROOT_PASSWORD: ${S3_PASSWORD}
+    ports:
+      - "9000:9000"
+      - "9090:9090"
+    volumes:
+      - ./data/minio:/data
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.s3.rule=Host(`${IMG_DOMAIN}`)"
+      - "traefik.http.routers.s3.entrypoints=web"
   traefik:
     image: "traefik:v2.9"
     container_name: "traefik"
     command:
-      #- "--log.level=DEBUG"
+      - "--log.level=DEBUG"
       - "--api.insecure=true"
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
