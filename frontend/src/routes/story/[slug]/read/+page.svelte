@@ -115,7 +115,7 @@
 {:else} 
     <div class="mx-auto max-w-[1000px]">
         {#if data.story.first_page_id != currPage.id}
-            <div class="mb-8 mx-auto w-fit items-center">
+            <div class="mb-8 mx-auto w-fit items-center text-center">
                 <A on:click={back} class="mb-4 font-medium hover:underline"><ArrowUturnLeft /> Go back to the previous page</A>
                 <P justify class="flex flex-wrap items-center w-full md:text-xl" weight="light" size="lg" color="text-gray-500 dark:text-gray-400">
                     <div class="mr-2 inline-flex items-center whitespace-nowrap">

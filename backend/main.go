@@ -68,6 +68,6 @@ func main() {
 		r.Group(imgService.UserRoutes)
 	})
 
-	fmt.Println("Starting Storiesque api on " + os.Getenv("API_PORT"))
+	fmt.Println("Starting Storiesque api on " + os.Getenv("API_DOMAIN") + os.Getenv("API_PORT"))
 	http.ListenAndServe(":"+os.Getenv("API_PORT"), router)
 }
