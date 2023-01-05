@@ -9,7 +9,7 @@ services:
       db:
         condition: service_healthy
     labels:
-      - "traefik.enable=enable"
+      - "traefik.enable=true"
       - "traefik.http.routers.api.rule=Host(`${API_DOMAIN}`)"
       - "traefik.http.routers.api.entrypoints=web"
   db:
@@ -36,12 +36,16 @@ services:
     environment:
       PUBLIC_API_URL: ${PUBLIC_API_URL}
       PUBLIC_IMG_URL: ${PUBLIC_IMG_URL}
+      ORIGIN: ${PUBLIC_WEB_URL}
+      PROTOCOL_HEADER: x-forwarded-proto
+      HOST_HEADER: x-forwarded-host
     depends_on:
       - api
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.web.rule=Host(`${WEB_DOMAIN}`)"
       - "traefik.http.routers.web.entrypoints=web"
+      - "traefik.http.services.web.loadbalancer.server.port=3000"
   s3:
     image: "quay.io/minio/minio:latest"
     container_name: "storiesque-s3"

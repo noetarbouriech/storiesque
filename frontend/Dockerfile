@@ -1,11 +1,10 @@
 FROM node:19
 WORKDIR /app
 
-COPY ./frontend/package.json/ ./
+COPY ./frontend/package*.json/ ./
 COPY .env ./
 
-RUN npm install
-RUN npm ci --only=production
+RUN npm ci
 
 COPY ./frontend .
 
