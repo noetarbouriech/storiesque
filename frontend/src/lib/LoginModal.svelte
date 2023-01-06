@@ -40,11 +40,11 @@
         <h3 class="text-xl font-medium text-gray-900 dark:text-white p-0">Welcome back!</h3>
         <Label class="space-y-2">
         <span>Email</span>
-        <Input type="email" name="email" placeholder="name@example.com" required />
+        <Input type="email" name="email" placeholder="name@example.com" autocomplete="email" required />
         </Label>
         <Label class="space-y-2">
         <span>Your password</span>
-        <Input type="password" name="password" placeholder="•••••" required />
+        <Input type="password" name="password" placeholder="•••••" autocomplete="current-password" required />
         </Label>
         <Button type="submit" class="w-full1">Log In</Button>
         <div class="text-sm font-medium text-gray-500 dark:text-gray-300">

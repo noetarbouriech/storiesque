@@ -52,19 +52,19 @@
     <form on:submit|preventDefault={signUp}>
         <div class="mb-6">
             <Label for="username" class="mb-2">Username</Label>
-            <Input type="text" name="username" id="username" placeholder="john_doe" required />
+            <Input type="text" name="username" id="username" placeholder="john_doe" autocomplete="username" required />
         </div>
         <div class="mb-6">
             <Label for="email" class="mb-2">Email address</Label>
-            <Input type="email" name="email" id="email" placeholder="john.doe@company.com" required />
+            <Input type="email" name="email" id="email" placeholder="john.doe@company.com" autocomplete="email" required />
         </div>
         <div class="mb-6">
             <Label for="password" class="mb-2">Password</Label>
-            <Input type="password" name="password" id="password" placeholder="•••••••••" required />
+            <Input type="password" name="password" id="password" placeholder="•••••••••" autocomplete="new-password" required />
         </div>
         <div class="mb-6">
             <Label for="confirm_password" class="mb-2">Confirm password</Label>
-            <Input bind:value={checkPass} type="password" id="confirm_password" placeholder="•••••••••" required />
+            <Input bind:value={checkPass} type="password" id="confirm_password" placeholder="•••••••••" autocomplete="new-password" required />
         </div>
         <Button type="submit">Submit</Button>
         {#if errorMsg}

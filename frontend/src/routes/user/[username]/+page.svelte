@@ -21,8 +21,11 @@
 <Heading customSize="text-3xl font-extrabold md:text-5xl" class="text-center pb-8" tag="h1">
     @{data.user.username} {#if data.user.is_admin} <CheckBadge size="50" class="inline"/><Tooltip>Admin</Tooltip>{/if}
 </Heading>
-<span class="text-center text-m text-gray-500 dark:text-gray-400">Joined in 2022</span>
+{#if data.user.stories.length === 1}
+<span class="text-center text-m text-gray-500 dark:text-gray-400">Has written {data.user.stories.length} story</span>
+{:else}
 <span class="text-center text-m text-gray-500 dark:text-gray-400">Has written {data.user.stories.length} stories</span>
+{/if}
 </Card>
 
 <Heading class="text-center mt-16 mb-4" tag="h1">Author of</Heading>
