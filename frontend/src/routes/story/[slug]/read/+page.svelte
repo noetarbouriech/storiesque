@@ -86,6 +86,10 @@
     });
 </script>
 
+<svelte:head>
+  <title>{data.story.title} - Storiesque</title>
+</svelte:head>
+
 <Toast transition={undefined} divClass="w-full max-w-fit p-4" class="mx-auto mb-8" simple>
     <svelte:fragment slot="icon">
         <BookOpen />

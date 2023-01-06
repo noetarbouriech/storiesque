@@ -30,6 +30,10 @@
 
 </script>
 
+<svelte:head>
+  <title>{data.story.title} - Storiesque</title>
+</svelte:head>
+
 {#if editMode}
     <Input class="text-center text-xl mb-8" type="text" name="title" id="title" bind:value={data.story.title} required />
     <ImageUpload bind:has_img={data.story.has_img} id={data.story.id} type="story" alt={data.story.title} default_img="/default_story.png" bind:image_url={image_url}/>

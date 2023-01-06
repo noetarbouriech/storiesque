@@ -42,6 +42,10 @@
 
 </script>
 
+<svelte:head>
+  <title>Sign up - Storiesque</title>
+</svelte:head>
+
 <Heading class="text-center" tag="h1">Sign up</Heading>
 
 <Card size="lg" class="mx-auto mt-8">

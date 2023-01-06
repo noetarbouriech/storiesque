@@ -12,6 +12,10 @@
     });
 </script>
 
+<svelte:head>
+  <title>Admin - Storiesque</title>
+</svelte:head>
+
 <Heading class="text-center mb-10" tag="h1">Admin Section</Heading>
 
 <Tabs style="full" defaultClass="flex rounded-lg divide-x divide-gray-200 shadow dark:divide-gray-700">

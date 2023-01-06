@@ -8,6 +8,10 @@
     export let data: PageData;
 </script>
 
+<svelte:head>
+  <title>@{data.user.username} - Storiesque</title>
+</svelte:head>
+
 <Card padding='sm' class="mx-auto">
 {#if data.user.has_img}
     <Avatar src="{env.PUBLIC_IMG_URL}/user/{data.user.id}.png" class="mx-auto mb-8" size="xl" data-name=data.user.username></Avatar>
