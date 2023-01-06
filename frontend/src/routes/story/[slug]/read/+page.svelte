@@ -2,7 +2,7 @@
 	import { onMount } from "svelte";
     import { env } from '$env/dynamic/public';
     import { userStore } from '../../../../store';
-    import { Toast, P, A, Hr, Button, Popover, TextPlaceholder, Spinner, Span, Input, Textarea, Img, Card } from 'flowbite-svelte'
+    import { Toast, P, A, Hr, Button, Popover, TextPlaceholder, Spinner, Span, Input, Textarea, Img, Badge } from 'flowbite-svelte'
     import type { PageData } from './$types';
     import { ArrowUturnLeft, BookOpen, InformationCircle, Plus } from 'svelte-heros-v2';
     import { page } from '$app/stores';
@@ -64,6 +64,17 @@
             method: 'POST',
             credentials: 'include',
         })).json())];
+    }
+
+    async function removeChoice(choice: { page_id: number; action: string; }): Promise<void> {
+        await fetch(`${env.PUBLIC_API_URL}/page/${choice.page_id}`, { 
+            method: 'DELETE',
+            credentials: 'include',
+        })
+        .then(() => {
+            currPage.choices.splice(currPage.choices.indexOf(choice), 1);
+            currPage.choices = currPage.choices;
+        });
     }
 
     async function save() {
@@ -151,7 +162,12 @@
             </P>
         {:else}
             {#each currPage.choices as choice}
-            <Button on:click={() => changePage(choice.page_id)} class="mb-2 break-all">{choice.action}</Button>
+            <div class="relative">
+                <Button on:click={() => changePage(choice.page_id)} class="mb-2 w-full break-all">{choice.action}</Button>
+                {#if editMode}
+                    <Badge large rounded index ><A aClass="" on:click={() => removeChoice(choice)}>X</A></Badge>
+                {/if}
+            </div>
             {/each}
         {/if}
         {#if editMode}
