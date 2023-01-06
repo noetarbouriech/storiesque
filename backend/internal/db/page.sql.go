@@ -82,10 +82,10 @@ const updatePage = `-- name: UpdatePage :exec
 UPDATE page
 SET
   action = CASE WHEN $2::boolean
-    THEN $3::VARCHAR(32) ELSE action END,
+    THEN $3::VARCHAR(128) ELSE action END,
 
   body = CASE WHEN $4::boolean
-    THEN $5::VARCHAR(4096) ELSE body END
+    THEN $5::TEXT ELSE body END
 WHERE id = $1
 `
 

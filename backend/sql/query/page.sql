@@ -11,10 +11,10 @@ RETURNING *;
 UPDATE page
 SET
   action = CASE WHEN @action_do_update::boolean
-    THEN @action::VARCHAR(32) ELSE action END,
+    THEN @action::VARCHAR(128) ELSE action END,
 
   body = CASE WHEN @body_do_update::boolean
-    THEN @body::VARCHAR(4096) ELSE body END
+    THEN @body::TEXT ELSE body END
 WHERE id = $1;
 
 -- name: DeletePage :exec
