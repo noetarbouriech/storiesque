@@ -11,7 +11,8 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.api.rule=Host(`${API_DOMAIN}`)"
-      - "traefik.http.routers.api.entrypoints=web"
+      - "traefik.http.routers.api.tls.certresolver=le"
+      - "traefik.http.routers.api.entrypoints=websecure"
   db:
     image: postgres
     container_name: "storiesque-db"
@@ -26,6 +27,7 @@ services:
     volumes:
       - ./backend/sql/schema.sql:/docker-entrypoint-initdb.d/create_schema.sql
       - ./backend/sql/trigger.sql:/docker-entrypoint-initdb.d/create_trigger.sql
+      - ./data/postgres:/var/lib/postgresql/data
     labels:
       - "traefik.enable=false"
   web:
@@ -44,9 +46,8 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.web.rule=Host(`${WEB_DOMAIN}`)"
-      - "traefik.http.routers.web.tls=true
-      - "traefik.http.routers.web.tls.certresolver=le
-      - "traefik.http.routers.web.entrypoints=web"
+      - "traefik.http.routers.web.tls.certresolver=le"
+      - "traefik.http.routers.web.entrypoints=websecure"
       - "traefik.http.services.web.loadbalancer.server.port=3000"
   s3:
     image: "quay.io/minio/minio:latest"
@@ -55,6 +56,7 @@ services:
     environment:
       MINIO_ROOT_USER: ${S3_USER}
       MINIO_ROOT_PASSWORD: ${S3_PASSWORD}
+      MINIO_BROWSER_REDIRECT_URL: ${PUBLIC_S3_URL}
     ports:
       - "9000:9000"
       - "9090:9090"
@@ -63,7 +65,8 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.s3.rule=Host(`${IMG_DOMAIN}`)"
-      - "traefik.http.routers.s3.entrypoints=web"
+      - "traefik.http.routers.s3.tls.certresolver=le"
+      - "traefik.http.routers.s3.entrypoints=websecure"
   traefik:
     image: "traefik:v2.9"
     container_name: "traefik"
@@ -74,22 +77,16 @@ services:
       - "--providers.docker.exposedbydefault=false"
       - "--entrypoints.web.address=:80"
       - "--entryPoints.websecure.address=:443"
-      - "--certificatesResolvers.le.acme.email=${EMAIL}"
-      - "--certificatesResolvers.le.acme.storage=acme.json"
-      - "--certificatesResolvers.le.acme.tlsChallenge=true"
-      - "--certificatesResolvers.le.acme.httpChallenge=true"
-      - "--certificatesResolvers.le.acme.httpChallenge.entryPoint=web"
+      - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
+      - "--certificatesresolvers.le.acme.httpchallenge=true"
+      - "--certificatesresolvers.le.acme.email=${EMAIL}"
+      - "--certificatesresolvers.le.acme.storage=/letsencrypt/acme.json"
+      - "--certificatesresolvers.le.acme.httpchallenge.entrypoint=web"
     ports:
       - "80:80"
-      - "43:443"
+      - "443:443"
       - "8080:8080"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - ./acme.json:/acme.json
-    labels:
-      # Redirect all HTTP to HTTPS permanently
-      - traefik.http.routers.http_catchall.rule=HostRegexp(`{any:.+}`)
-      - traefik.http.routers.http_catchall.entrypoints=web
-      - traefik.http.routers.http_catchall.middlewares=https_redirect
-      - traefik.http.middlewares.https_redirect.redirectscheme.scheme=https
-      - traefik.http.middlewares.https_redirect.redirectscheme.permanent=true
+      - ./letsencrypt:/letsencrypt
