@@ -35,7 +35,7 @@
 
 <Navbar let:hidden let:toggle>
 <NavBrand href="/">
-    <img src="https://hotemoji.com/images/dl/f/open-book-emoji-by-twitter.png" class="mr-3 h-6 sm:h-9" alt="Storiesque Logo"/>
+    <img src="/logo.png" class="mr-3 h-6 sm:h-9" alt="Storiesque Logo"/>
     <span class="self-center whitespace-nowrap text-xl font-semibold dark:text-white max-[300px]:hidden">Storiesque</span>
 </NavBrand>
 {#if $userStore.username == ""}
