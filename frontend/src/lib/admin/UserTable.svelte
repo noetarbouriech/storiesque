@@ -38,7 +38,7 @@
     async function updateAdmin(userId: number): Promise<void> {
         try {
             const response = await fetch(`${env.PUBLIC_API_URL}/user/${userId}/admin`, {
-                method: 'PUT',
+                method: 'PATCH',
                 credentials: 'include'
             });
             const data = await response.json();

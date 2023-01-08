@@ -65,13 +65,13 @@ func (s *Service) PublicRoutes(r chi.Router) {
 }
 
 func (s *Service) UserRoutes(r chi.Router) {
-	r.Post("/story", s.createStory)              // create a story
-	r.Put("/story/{id}", s.updateStory)          // update a story
-	r.Put("/story/{id}/featured", s.setFeatured) // set a story as featured on homepage
-	r.Delete("/story/{id}", s.deleteStory)       // delete a story
+	r.Post("/story", s.createStory)                // create a story
+	r.Patch("/story/{id}", s.updateStory)          // update a story
+	r.Patch("/story/{id}/featured", s.setFeatured) // set a story as featured on homepage
+	r.Delete("/story/{id}", s.deleteStory)         // delete a story
 
 	r.Post("/page/{id}", s.createPage)   // add a choice to a given page
-	r.Put("/page/{id}", s.updatePage)    // update a page
+	r.Patch("/page/{id}", s.updatePage)  // update a page
 	r.Delete("/page/{id}", s.deletePage) // delete a page (cascade delete choices)
 }
 

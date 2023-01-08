@@ -18,7 +18,7 @@
         const jsonData = JSON.stringify(Object.fromEntries(formData));
         try {
             const response = await fetch(`${env.PUBLIC_API_URL}/user/${id}`, {
-                method: 'PUT',
+                method: 'PATCH',
                 credentials: 'include',
                 headers: {
                     'Content-Type': 'application/json'

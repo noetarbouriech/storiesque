@@ -38,7 +38,7 @@
     async function updateFeatured(storyId: number): Promise<void> {
         try {
             const response = await fetch(`${env.PUBLIC_API_URL}/story/${storyId}/featured`, {
-                method: 'PUT',
+                method: 'PATCH',
                 credentials: 'include'
             });
             const data = await response.json();

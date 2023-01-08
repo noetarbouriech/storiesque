@@ -79,7 +79,7 @@
 
     async function save() {
         await fetch(`${env.PUBLIC_API_URL}/page/${currPage.id}`, {
-            method: 'PUT',
+            method: 'PATCH',
             credentials: 'include',
             headers: {
                 'Content-Type': 'application/json'

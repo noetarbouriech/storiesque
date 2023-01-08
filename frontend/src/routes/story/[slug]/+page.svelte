@@ -14,7 +14,7 @@
 
     async function save() {
         await fetch(`${env.PUBLIC_API_URL}/story/${data.story.id}`, {
-            method: 'PUT',
+            method: 'PATCH',
             credentials: 'include',
             headers: {
                 'Content-Type': 'application/json'

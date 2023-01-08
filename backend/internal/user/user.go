@@ -62,8 +62,8 @@ func (s *Service) PublicRoutes(r chi.Router) {
 
 func (s *Service) UserRoutes(r chi.Router) {
 	r.Post("/user", s.createUser)
-	r.Put("/user/{id}", s.updateUser)
-	r.Put("/user/{id}/admin", s.setAdmin)
+	r.Patch("/user/{id}", s.updateUser)
+	r.Patch("/user/{id}/admin", s.setAdmin)
 	r.Delete("/user/{id}", s.deleteUser)
 
 	r.Get("/shelf", s.getShelf)
