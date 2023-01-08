@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/joho/godotenv"
@@ -45,8 +46,14 @@ func main() {
 	// init router
 	router := api.CreateRouter()
 
+	// get brcrypt password cost from env
+	cost, err := strconv.Atoi(os.Getenv("BCRYPT_COST"))
+	if err != nil {
+		log.Fatal("Error reading bcrypt cost")
+	}
+
 	// init services
-	authService := auth.NewService(queries, os.Getenv("JWT_SECRET"), os.Getenv("API_DOMAIN"))
+	authService := auth.NewService(queries, os.Getenv("JWT_SECRET"), os.Getenv("API_DOMAIN"), cost)
 	storyService := story.NewService(queries)
 	userService := user.NewService(queries)
 	imgService := img.NewService(queries, minio)

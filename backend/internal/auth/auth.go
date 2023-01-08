@@ -19,16 +19,18 @@ import (
 )
 
 type Service struct {
-	queries   *db.Queries
-	tokenAuth *jwtauth.JWTAuth
-	apiDomain string
+	queries    *db.Queries
+	tokenAuth  *jwtauth.JWTAuth
+	apiDomain  string
+	bcryptCost int
 }
 
-func NewService(queries *db.Queries, jwt_secret string, api_domain string) *Service {
+func NewService(queries *db.Queries, jwt_secret string, api_domain string, bcrypt_cost int) *Service {
 	return &Service{
-		queries:   queries,
-		tokenAuth: jwtauth.New("HS256", []byte(jwt_secret), nil),
-		apiDomain: api_domain,
+		queries:    queries,
+		tokenAuth:  jwtauth.New("HS256", []byte(jwt_secret), nil),
+		apiDomain:  api_domain,
+		bcryptCost: bcrypt_cost,
 	}
 }
 
@@ -173,7 +175,7 @@ func (s *Service) signUp(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// hash password
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), 8)
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), s.bcryptCost)
 	if err != nil {
 		utils.Response(w, r, 500, "error while hashing password")
 		return
