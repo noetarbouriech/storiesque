@@ -10,8 +10,6 @@ A fullstack application for creating and reading [Gamebooks](https://en.wikipedi
 
 ## Installation
 
-### With docker (recommended)
-
 1. Clone the repo
 ```
 git clone git@github.com:noetarbouriech/storiesque.git
@@ -24,8 +22,26 @@ git clone git@github.com:noetarbouriech/storiesque.git
 sudo docker compose -f docker-compose.prod.yml up -d
 ```
 
-Note: *Some files and folders may have a permission issue. Use of chmod may be required.*
+## Development
 
-### Without docker
+### PostgreSQL and MinIO
 
-TODO
+```
+sudo docker compose -f docker-compose.dev.yml up -d
+```
+
+### Backend
+
+```
+cd backend
+go mod .
+go run .
+```
+
+### Frontend
+
+```
+cd frontend
+npm install
+npm run dev
+```
